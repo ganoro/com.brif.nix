@@ -17,6 +17,7 @@ public class GmailAlternativeMessageParser {
 
 	private static final String DEFAULT_CHARSET = "UTF-8";
 	private MimeMultipart body;
+	private String charset;
 
 	public GmailAlternativeMessageParser(MimeMultipart multipart) {
 		this.body = multipart;
@@ -25,11 +26,14 @@ public class GmailAlternativeMessageParser {
 	public String getContent() {
 		try {
 			final BodyPart bodyPart = this.body.getBodyPart(1);
-			String charset = getMessageCharset(bodyPart);
+			charset = getMessageCharset(bodyPart);
 			Document doc = Jsoup.parse(bodyPart.getInputStream(), charset, "");
 			doc.select(".gmail_quote").remove();
-			return doc.outerHtml();
-
+			if (doc.text().trim().length() !=0) {
+				return doc.outerHtml();	
+			} else {
+				return "";
+			}
 		} catch (MessagingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -38,6 +42,10 @@ public class GmailAlternativeMessageParser {
 			e.printStackTrace();
 		}
 		return "";
+	}
+	
+	public String getCharset() {
+		return charset;
 	}
 
 	/**

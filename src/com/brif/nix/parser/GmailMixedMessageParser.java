@@ -10,6 +10,7 @@ public class GmailMixedMessageParser {
 
 	private static final String MULTIPART_ALTERNATIVE = "multipart/ALTERNATIVE";
 	private MimeMultipart multipart;
+	private String charset;
 
 	public GmailMixedMessageParser(MimeMultipart multipart) {
 		this.multipart = multipart;
@@ -21,10 +22,17 @@ public class GmailMixedMessageParser {
 			if (bodyPart.getContentType().startsWith(MULTIPART_ALTERNATIVE)) {
 				GmailAlternativeMessageParser p = new GmailAlternativeMessageParser(
 						(MimeMultipart) bodyPart.getContent());
+				this.charset = p.getCharset();
 				return p.getContent();
 			}
 		}
-
 		return "";
+	}
+
+	/**
+	 * @return the charset
+	 */
+	public String getCharset() {
+		return charset;
 	}
 }

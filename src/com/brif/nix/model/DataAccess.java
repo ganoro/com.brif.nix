@@ -3,6 +3,7 @@ package com.brif.nix.model;
 import java.io.IOException;
 import java.util.List;
 
+import javax.mail.Message;
 import javax.mail.MessagingException;
 
 import com.brif.nix.parse.Parse;
@@ -10,6 +11,7 @@ import com.brif.nix.parse.ParseException;
 import com.brif.nix.parse.ParseObject;
 import com.brif.nix.parse.ParseQuery;
 import com.brif.nix.parser.MessageParser;
+import com.sun.mail.gimap.GmailMessage;
 
 /**
  * Data access is only allowed here, decoupling data access to single point
@@ -79,9 +81,11 @@ public class DataAccess {
 	public void createMessage(User currentUser, MessageParser mp, String groupId)
 			throws IOException, MessagingException {
 		ParseObject parseMessage = new ParseObject(MESSAGES_SCHEMA);
+		parseMessage.put("message_id", mp.getMessageId());
 		parseMessage.put("user", currentUser.objectId);
 		parseMessage.put("thread", groupId);
 		parseMessage.put("content", mp.getContent());
+		parseMessage.setCharset(mp.getCharset());
 		parseMessage.saveInBackground();
 	}
 
@@ -136,5 +140,17 @@ public class DataAccess {
 		user.setObjectId(currentUser.objectId);
 		user.put("next_uid", currentUser.next_uid);
 		user.updateInBackground();
+	}
+
+	public void removeMessage(Message message) {
+		ParseObject parseMessage = new ParseObject(MESSAGES_SCHEMA);
+		GmailMessage gm = (GmailMessage) message;
+		try {
+			parseMessage.put("message_id", gm.getMsgId());
+		} catch (MessagingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		parseMessage.deleteInBackground();
 	}
 }

@@ -65,7 +65,8 @@ public class ParseObject {
 	private String mClassName;
 
 	private Hashtable<String, Object> mData;
-
+	private String charset;
+	
 	/**
 	 * Constructs a new ParseObject with no data in it. A ParseObject
 	 * constructed in this way will not have an objectId and will not persist to
@@ -276,6 +277,10 @@ public class ParseObject {
 	public void setObjectId(String objectId) {
 		mData.put("objectId", objectId);
 	}
+	
+	public void setCharset(String charset) {
+		this.charset = charset;
+	}
 
 	public void setCreatedAt(String createdAt) {
 		mData.put("createdAt", createdAt);
@@ -436,7 +441,15 @@ public class ParseObject {
 			httppost.addHeader("X-Parse-REST-API-Key", Parse.getRestAPIKey());
 			httppost.addHeader("Content-Type", "application/json");
 
-			httppost.setEntity(new StringEntity(toJSONObject().toString()));
+			
+			StringEntity stringEntity = null;
+			if (this.charset != null) {
+				stringEntity = new StringEntity(toJSONObject().toString(), charset);	
+			} else {
+				stringEntity = new StringEntity(toJSONObject().toString());
+			}
+			
+			httppost.setEntity(stringEntity);
 			HttpResponse httpresponse = httpclient.execute(httppost);
 
 			ParseResponse response = new ParseResponse(httpresponse);

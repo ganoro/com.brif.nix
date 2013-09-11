@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.mail.Address;
+import javax.mail.Flags;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
@@ -14,22 +15,39 @@ import javax.mail.internet.MimeMultipart;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
+import com.sun.mail.gimap.GmailFolder;
 import com.sun.mail.gimap.GmailMessage;
 
 public class MessageParser {
 
 	private GmailMessage message;
 	private String allRecipients;
+	private String charset;
 
 	public MessageParser(Message message) {
 		if (message == null || !(message instanceof GmailMessage)) {
 			throw new IllegalArgumentException("empty message in "
 					+ getClass().getCanonicalName());
 		}
-
 		this.message = (GmailMessage) message;
 	}
-
+	
+	public GmailFolder getFolder() {
+		return (GmailFolder) message.getFolder();
+	}
+	
+	public String[] getLabels() throws MessagingException {
+		return this.message.getLabels();
+	}
+	
+	public boolean isSeen() throws MessagingException {		
+		return message.isSet(Flags.Flag.SEEN); 
+	}
+	
+	public boolean isDraft() throws MessagingException {
+		return message.isSet(Flags.Flag.DRAFT);
+	}
+	
 	public String getSubject() throws MessagingException {
 		return this.message.getSubject();
 	}
@@ -79,13 +97,15 @@ public class MessageParser {
 			if (multipart.getContentType().startsWith("multipart/MIXED")) {
 				GmailMixedMessageParser mixed = new GmailMixedMessageParser(multipart);
 				result = mixed.getContent();
+				charset = mixed.getCharset();
 			} else if (multipart.getContentType().startsWith("multipart/ALTERNATIVE")) {
 				GmailAlternativeMessageParser p = new GmailAlternativeMessageParser(multipart);
 				result = p.getContent();	
+				charset = p.getCharset();
 			}
 		}
 		
-		return result.length() == 0 ? getSubject() : result;
+		return result.length() != 0 ? result : getSubject() == null ? "" : getSubject();
 	}
 
 	private String getAllRecipients(Address[] allRecipients, Address[] from) {
@@ -140,4 +160,9 @@ public class MessageParser {
 			return "error";
 		}
 	}
+	
+	public String getCharset() {
+		return charset;
+	}
+	
 }

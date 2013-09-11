@@ -26,10 +26,6 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.URLName;
-import javax.mail.event.FolderEvent;
-import javax.mail.event.FolderListener;
-import javax.mail.event.MessageChangedEvent;
-import javax.mail.event.MessageChangedListener;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
@@ -133,7 +129,6 @@ public class OAuth2Authenticator {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-
 		}
 
 		// SMTP connection
