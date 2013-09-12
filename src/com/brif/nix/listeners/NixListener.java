@@ -5,13 +5,14 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.mail.Flags;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.event.MessageCountEvent;
 import javax.mail.event.MessageCountListener;
 
 import com.brif.nix.model.DataAccess;
-import com.brif.nix.model.DataAccess.User;
+import com.brif.nix.model.User;
 import com.brif.nix.parser.MessageParser;
 
 public class NixListener implements MessageCountListener {

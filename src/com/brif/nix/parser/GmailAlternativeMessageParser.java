@@ -25,7 +25,8 @@ public class GmailAlternativeMessageParser {
 
 	public String getContent() {
 		try {
-			final BodyPart bodyPart = this.body.getBodyPart(1);
+			final int count = this.body.getCount();
+			final BodyPart bodyPart = this.body.getBodyPart(count == 1 ? 0 : 1);
 			charset = getMessageCharset(bodyPart);
 			Document doc = Jsoup.parse(bodyPart.getInputStream(), charset, "");
 			doc.select(".gmail_quote").remove();

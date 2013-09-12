@@ -66,7 +66,7 @@ public class ParseObject {
 
 	private Hashtable<String, Object> mData;
 	private String charset;
-	
+
 	/**
 	 * Constructs a new ParseObject with no data in it. A ParseObject
 	 * constructed in this way will not have an objectId and will not persist to
@@ -277,7 +277,7 @@ public class ParseObject {
 	public void setObjectId(String objectId) {
 		mData.put("objectId", objectId);
 	}
-	
+
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}
@@ -392,20 +392,20 @@ public class ParseObject {
 	 *            The key to access the value for.
 	 * @return Returns null if there is no such key or if it is not a long.
 	 */
-	public Long getLong(String key) {
+	public long getLong(String key, long defaultValue) {
 		Object value = get(key);
 
 		// test for no such key or value not a long
 
 		if (value == null)
-			return null;
-		
+			return defaultValue;
+
 		if (value.getClass() == Long.class)
 			return (Long) value;
 		else if (value.getClass() == Integer.class)
 			return Long.valueOf((Integer) value);
 
-		return null;
+		return defaultValue;
 	}
 
 	/**
@@ -441,14 +441,14 @@ public class ParseObject {
 			httppost.addHeader("X-Parse-REST-API-Key", Parse.getRestAPIKey());
 			httppost.addHeader("Content-Type", "application/json");
 
-			
 			StringEntity stringEntity = null;
 			if (this.charset != null) {
-				stringEntity = new StringEntity(toJSONObject().toString(), charset);	
+				stringEntity = new StringEntity(toJSONObject().toString(),
+						charset);
 			} else {
 				stringEntity = new StringEntity(toJSONObject().toString());
 			}
-			
+
 			httppost.setEntity(stringEntity);
 			HttpResponse httpresponse = httpclient.execute(httppost);
 
@@ -555,7 +555,8 @@ public class ParseObject {
 			httpput.addHeader("X-Parse-REST-API-Key", Parse.getRestAPIKey());
 			httpput.addHeader("Content-Type", "application/json");
 
-			httpput.setEntity(new StringEntity(toJSONObject(excludeObjectId).toString()));
+			httpput.setEntity(new StringEntity(toJSONObject(excludeObjectId)
+					.toString()));
 			HttpResponse httpresponse = httpclient.execute(httpput);
 
 			ParseResponse response = new ParseResponse(httpresponse);
@@ -568,7 +569,7 @@ public class ParseObject {
 				}
 
 				try {
-					setCreatedAt(jsonResponse.getString("updatedAt"));
+					setUpdatedAt(jsonResponse.getString("updatedAt"));
 				} catch (JSONException e) {
 					throw new ParseException(
 							ParseException.INVALID_JSON,
@@ -640,6 +641,129 @@ public class ParseObject {
 	 */
 	public void updateInBackground() {
 		updateInBackground(null);
+	}
+
+	/**
+	 * Increments this object to the server. Typically, you should use
+	 * incrementInBackground(com.parse.UpdateCallback) instead of this, unless you
+	 * are managing your own threading.
+	 * 
+	 * @throws ParseException
+	 *             Throws an exception if the server is inaccessible.
+	 */
+	public void increment(String key, int amount) throws ParseException {
+		try {
+			HttpClient httpclient = new DefaultHttpClient();
+			HttpPut httpput = new HttpPut(Parse.getParseAPIUrlClasses()
+					+ mClassName + "/" + getObjectId());
+			httpput.addHeader("X-Parse-Application-Id",
+					Parse.getApplicationId());
+			httpput.addHeader("X-Parse-REST-API-Key", Parse.getRestAPIKey());
+			httpput.addHeader("Content-Type", "application/json");
+
+			String json = "{\"" + key
+					+ "\":{\"__op\":\"Increment\",\"amount\":" + amount + "}}";
+
+			httpput.setEntity(new StringEntity(json));
+			HttpResponse httpresponse = httpclient.execute(httpput);
+
+			ParseResponse response = new ParseResponse(httpresponse);
+
+			if (!response.isFailed()) {
+				JSONObject jsonResponse = response.getJsonObject();
+
+				if (jsonResponse == null) {
+					throw response.getException();
+				}
+
+				try {
+					setUpdatedAt(jsonResponse.getString("updatedAt"));
+				} catch (JSONException e) {
+					throw new ParseException(
+							ParseException.INVALID_JSON,
+							"Although Parse reports object successfully saved, the response was invalid.",
+							e);
+				}
+
+			} else {
+				throw response.getException();
+			}
+		} catch (ClientProtocolException e) {
+			throw ParseResponse.getConnectionFailedException(e);
+		} catch (IOException e) {
+			throw ParseResponse.getConnectionFailedException(e);
+		}
+	}
+
+	/**
+	 * A private helper class to facilitate running a ParseObject save operation
+	 * in the background.
+	 * 
+	 * @author js
+	 * 
+	 */
+	class IncrementInBackgroundThread extends Thread {
+		UpdateCallback mIncrementCallback;
+		private int amount;
+		private String key;
+
+		/**
+		 * 
+		 * @param callback
+		 *            A function object of type Updatecallback, whose method
+		 *            done will be called upon completion
+		 */
+		IncrementInBackgroundThread(String key, int amount,
+				UpdateCallback callback) {
+			this.key = key;
+			this.amount = amount;
+			mIncrementCallback = callback;
+		}
+
+		public void run() {
+			ParseException exception = null;
+
+			try {
+				increment(key, amount);
+			} catch (ParseException e) {
+				exception = e;
+			}
+
+			if (mIncrementCallback != null) {
+				mIncrementCallback.done(exception);
+			}
+		}
+	}
+
+	/**
+	 * Increments this object to the server in a background thread. This is
+	 * preferable to using save(), unless your code is already running from a
+	 * background thread.
+	 * 
+	 * @param callback
+	 *            callback.done(e) is called when the save completes.
+	 */
+	public void incrementInBackground(UpdateCallback callback, String key,
+			int amount) {
+		IncrementInBackgroundThread t = new IncrementInBackgroundThread(key,
+				amount, callback);
+		t.start();
+	}
+
+	/**
+	 * Increments this object to the server in a background thread. Use this when you
+	 * do not have code to run on completion of the push.
+	 */
+	public void incremenetInBackground(String key, int amount) {
+		incrementInBackground(null, key, amount);
+	}
+
+	/**
+	 * Increments this object to the server in a background thread. Use this when you
+	 * do not have code to run on completion of the push.
+	 */
+	public void incremenetInBackground(String key) {
+		incremenetInBackground(key, 1);
 	}
 
 	private JSONObject toJSONObject(Set<String> ignoreFields) {

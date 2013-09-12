@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.brif.nix.model;
+package com.brif.nix.notifications;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -31,19 +31,22 @@ public class SapiNotificationsHandler implements NotificationsHandler {
 	}
 
 	@Override
-	public void notifyGroupsEvent(String email, Map<String, Object> data, String charset) {
-		sendNotification(email, "groups", data, charset);
+	public void notifyGroupsEvent(String email, String eventType,
+			Map<String, Object> data, String charset) {
+		sendNotification(email, "groups", eventType, data, charset);
 	}
 
 	@Override
-	public void notifyMessagesEvent(String email, Map<String, Object> data, String charset) {
+	public void notifyMessagesEvent(String email, String eventType,
+			Map<String, Object> data, String charset) {
 		// TODO implement messages event notifier
 	}
-	
-	public boolean sendNotification(String email, String type,
-			Map<String, Object> notificationAttributes, String charset) {
+
+	public boolean sendNotification(String email, String entity,
+			String eventType, Map<String, Object> notificationAttributes,
+			String charset) {
 		try {
-			sendPost(email, type, notificationAttributes, charset);
+			sendPost(email, entity, eventType, notificationAttributes, charset);
 		} catch (ClientProtocolException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -54,7 +57,7 @@ public class SapiNotificationsHandler implements NotificationsHandler {
 		return false;
 	}
 
-	public void sendPost(String email, String type,
+	public void sendPost(String email, String entity, String eventType,
 			Map<String, Object> notificationAttributes, String charset)
 			throws ClientProtocolException, IOException {
 		HttpClient httpclient = new DefaultHttpClient();
@@ -62,7 +65,7 @@ public class SapiNotificationsHandler implements NotificationsHandler {
 		httppost.addHeader("Content-Type", "application/json");
 
 		StringEntity stringEntity;
-		JSONObject jsonObject = getResultJSON(email, type,
+		JSONObject jsonObject = getResultJSON(email, entity, eventType,
 				notificationAttributes);
 		if (charset != null) {
 			stringEntity = new StringEntity(jsonObject.toString(), charset);
@@ -84,12 +87,15 @@ public class SapiNotificationsHandler implements NotificationsHandler {
 		}
 	}
 
-	private JSONObject getResultJSON(String email, String type,
+	private JSONObject getResultJSON(String email, String entity,
+			String eventType,
+
 			Map<String, Object> notificationAttributes) {
 		final HashMap<String, Object> top = new HashMap<String, Object>(3);
 		final JSONObject dataJSON = toJSONObject(notificationAttributes);
 		top.put("email", email);
-		top.put("type", type);
+		top.put("entity", entity);
+		top.put("type", eventType);
 		top.put("data", dataJSON);
 		JSONObject jsonObject = toJSONObject(top);
 		return jsonObject;

@@ -31,6 +31,8 @@ import javax.mail.internet.InternetAddress;
 
 import com.brif.nix.listeners.NixListener;
 import com.brif.nix.model.DataAccess;
+import com.brif.nix.model.User;
+import com.brif.nix.notifications.SapiNotificationsHandler;
 import com.brif.nix.parser.MessageParser;
 import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.auth.oauth2.TokenResponseException;
@@ -85,8 +87,8 @@ public class OAuth2Authenticator {
 
 			// user info
 			DataAccess dataAccess = new DataAccess();
-			final DataAccess.User currentUser = dataAccess.findByEmail(email);
-			
+			final User currentUser = dataAccess.findByEmail(email);
+
 			String originalAccessToken = currentUser.access_token;
 
 			// IMAP connection
@@ -96,12 +98,12 @@ public class OAuth2Authenticator {
 				// internal error
 				return;
 			}
-			
+
 			// update with latest access_token
 			if (currentUser.access_token != originalAccessToken) {
 				dataAccess.updateUserToken(currentUser);
 			}
-			
+
 			GmailFolder inbox = (GmailFolder) imapStore.getFolder("[Gmail]")
 					.getFolder("All Mail");
 			inbox.open(Folder.READ_ONLY);
@@ -115,11 +117,13 @@ public class OAuth2Authenticator {
 				dataAccess.storeMessage(currentUser, mp);
 				System.out.println("Adding message: " + mp.getMessageId());
 			}
-			
+
 			// update user with latest fetch
 			currentUser.next_uid = uidNext;
 			dataAccess.updateUserNextUID(currentUser);
 
+			dataAccess = new DataAccess(new SapiNotificationsHandler(
+					"http://api.brif.us"));
 			inbox.addMessageCountListener(new NixListener(currentUser,
 					dataAccess));
 
@@ -258,8 +262,8 @@ public class OAuth2Authenticator {
 		return null;
 	}
 
-	private static GmailSSLStore connect(DataAccess.User currentUser)
-			throws Exception, IOException {
+	private static GmailSSLStore connect(User currentUser) throws Exception,
+			IOException {
 		GmailSSLStore imapStore = null;
 		try {
 			imapStore = connectToImap("imap.gmail.com", 993, currentUser.email,
@@ -267,12 +271,12 @@ public class OAuth2Authenticator {
 		} catch (AuthenticationFailedException e) {
 			OAuth2Configuration conf = OAuth2Configuration
 					.getConfiguration(currentUser.origin);
-			
+
 			final String access_token = refreshAccessToken(
 					currentUser.refresh_token, conf.get("client_id"),
 					conf.get("client_secret"));
 			currentUser.access_token = access_token;
-			
+
 			try {
 				imapStore = connectToImap("imap.gmail.com", 993,
 						currentUser.email, currentUser.access_token, false);
