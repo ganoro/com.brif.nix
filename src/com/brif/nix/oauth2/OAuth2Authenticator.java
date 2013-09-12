@@ -326,7 +326,7 @@ public class OAuth2Authenticator {
 	/**
 	 * Runnable used to keep alive the connection to the IMAP server
 	 * 
-	 * @author Juan Mart’n Sotuyo Dodero <jmsotuyo@monits.com>
+	 * @author Juan Martin Sotuyo Dodero <jmsotuyo@monits.com>
 	 */
 	private static class KeepAliveRunnable implements Runnable {
 
