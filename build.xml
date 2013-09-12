@@ -96,19 +96,18 @@
         <antcall target="build"/>
     </target>
     
-	<target name="OAuth2Authenticator">
+	<target name="execute">
         <java classname="com.brif.nix.oauth2.OAuth2Authenticator" failonerror="true" fork="yes">
-            <arg line="ganoro@gmail.com"/>
+            <arg line="${arg0}"/>
             <classpath refid="com.brif.nix.classpath"/>
         </java>
     </target>
 
 	<!-- added -->
 	<target name="run">
-        
-		<java jar="build/jar/nix.jar" fork="true">
-			<classpath refid="com.brif.nix.classpath"/>
-	        <arg value="${arg0}"/>
+		<java jar="build/jar/nix.jar" fork="true" failonerror="true">
+            <arg line="${arg0}"/>
+            <classpath refid="com.brif.nix.classpath"/>			
 		</java>
     </target>
 	<!-- /added -->
