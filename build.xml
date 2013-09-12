@@ -73,6 +73,11 @@
             <src path="src"/>
             <classpath refid="com.brif.nix.classpath"/>
         </javac>
+    	<jar destfile="build/jar/nix.jar" basedir="build/classes">
+	        <manifest>
+	            <attribute name="Main-Class" value="com.brif.nix.oauth2.OAuth2Authenticator"/>
+	        </manifest>
+        </jar>
     </target>
     <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
     <target description="copy Eclipse compiler jars to ant lib directory" name="init-eclipse-compiler">
