@@ -105,7 +105,11 @@
 
 	<!-- added -->
 	<target name="run">
-	        <java jar="build/jar/nix.jar" fork="true"/>
+        
+		<java jar="build/jar/nix.jar" fork="true">
+			<classpath refid="com.brif.nix.classpath"/>
+	        <arg value="${arg0}"/>
+		</java>
     </target>
 	<!-- /added -->
 </project>
