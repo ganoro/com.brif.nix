@@ -96,7 +96,7 @@ public class DataAccess {
 				// send notification
 				notifyGroupAdded(currentUser, mp);
 			} else {
-				notifyGroupChanged(currentUser, mp, group);
+				notifyGroupModified(currentUser, mp, group);
 			}
 
 			return group.getObjectId();
@@ -112,7 +112,7 @@ public class DataAccess {
 		return null;
 	}
 
-	private void notifyGroupChanged(final User currentUser, MessageParser mp,
+	private void notifyGroupModified(final User currentUser, MessageParser mp,
 			final ParseObject group) {
 
 		group.incrementInBackground(new UpdateCallback() {
@@ -123,7 +123,7 @@ public class DataAccess {
 						.getString("md5"), group.getLong("size", 1), group
 						.getLong("unseen", 1));
 				notificationsHandler.notifyGroupsEvent(currentUser.email,
-						"changed", g.toMap(), Charset.defaultCharset().toString());
+						"modified", g.toMap(), Charset.defaultCharset().toString());
 				
 				group.incremenetInBackground("size");
 			}

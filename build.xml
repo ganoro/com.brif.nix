@@ -73,11 +73,13 @@
             <src path="src"/>
             <classpath refid="com.brif.nix.classpath"/>
         </javac>
+    	<!-- added -->
     	<jar destfile="build/jar/nix.jar" basedir="bin">
 	        <manifest>
 	            <attribute name="Main-Class" value="com.brif.nix.oauth2.OAuth2Authenticator"/>
 	        </manifest>
         </jar>
+    	<!-- /added -->
     </target>
     <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
     <target description="copy Eclipse compiler jars to ant lib directory" name="init-eclipse-compiler">
@@ -93,10 +95,17 @@
         <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
         <antcall target="build"/>
     </target>
-    <target name="OAuth2Authenticator">
+    
+	<target name="OAuth2Authenticator">
         <java classname="com.brif.nix.oauth2.OAuth2Authenticator" failonerror="true" fork="yes">
             <arg line="ganoro@gmail.com"/>
             <classpath refid="com.brif.nix.classpath"/>
         </java>
     </target>
+
+	<!-- added -->
+	<target name="run">
+	        <java jar="build/jar/nix.jar" fork="true"/>
+    </target>
+	<!-- /added -->
 </project>
