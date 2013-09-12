@@ -94,7 +94,7 @@ public class DataAccess {
 				group.save();
 
 				// send notification
-				notifyGroupAdded(currentUser, mp);
+				notifyGroupAdded(currentUser, group);
 			} else {
 				notifyGroupModified(currentUser, mp, group);
 			}
@@ -119,22 +119,25 @@ public class DataAccess {
 
 			@Override
 			public void done(ParseException e) {
-				Group g = new Group(group.getString("recipients"), group
-						.getString("md5"), group.getLong("size", 1), group
-						.getLong("unseen", 1));
+				Group g = new Group(group.getObjectId(), group
+						.getString("recipients"), group.getString("md5"), group
+						.getLong("size", 1), group.getLong("unseen", 1));
+
 				notificationsHandler.notifyGroupsEvent(currentUser.email,
-						"modified", g.toMap(), Charset.defaultCharset().toString());
-				
+						"modified", g.toMap(), Charset.defaultCharset()
+								.toString());
+
 				group.incremenetInBackground("size");
 			}
 		}, "unseen", 1);
 
 	}
 
-	private void notifyGroupAdded(User currentUser, MessageParser mp)
+	private void notifyGroupAdded(User currentUser, ParseObject group)
 			throws MessagingException {
 
-		Group g = new Group(mp.getGroup(), mp.getGroupUnique());
+		Group g = new Group(group.getObjectId(), group.getString("recipients"),
+				group.getString("md5"));
 		notificationsHandler.notifyGroupsEvent(currentUser.email, "added",
 				g.toMap(), Charset.defaultCharset().toString());
 	}
