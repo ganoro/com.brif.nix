@@ -15,7 +15,6 @@ import com.brif.nix.parse.ParseObject;
 import com.brif.nix.parse.ParseQuery;
 import com.brif.nix.parse.UpdateCallback;
 import com.brif.nix.parser.MessageParser;
-import com.sun.mail.gimap.GmailMessage;
 
 /**
  * Data access is only allowed here, decoupling data access to single point
@@ -67,8 +66,8 @@ public class DataAccess {
 			throws IOException, MessagingException {
 		ParseObject parseMessage = new ParseObject(MESSAGES_SCHEMA);
 		parseMessage.put("message_id", mp.getMessageId());
-		parseMessage.put("user", currentUser.objectId);
-		parseMessage.put("thread", groupId);
+		parseMessage.put("user_id", currentUser.objectId);
+		parseMessage.put("group_id", groupId);
 		parseMessage.put("content", mp.getContent());
 		parseMessage.setCharset(mp.getCharset());
 		parseMessage.saveInBackground();
@@ -81,14 +80,14 @@ public class DataAccess {
 			ParseObject group = null;
 			List<ParseObject> groups = query.find();
 			for (ParseObject potentials : groups) {
-				if (potentials.getString("user").equals(currentUser.objectId)) {
+				if (potentials.getString("user_id").equals(currentUser.objectId)) {
 					group = potentials;
 				}
 			}
 
 			if (group == null) {
 				group = new ParseObject(GROUPS_SCHEMA);
-				group.put("user", currentUser.objectId);
+				group.put("user_id", currentUser.objectId);
 				group.put("recipients", mp.getGroup());
 				group.put("md5", mp.getGroupUnique());
 				group.save();
