@@ -110,7 +110,7 @@ public class OAuth2Authenticator {
 
 			
 			final long uidNext0 = inbox.getUIDNext();
-			long min0 = Math.max(1, uidNext0 - 2000);
+			long min0 = Math.max(1, uidNext0 - 5000);
 			final Message[] messages0 = inbox.getMessagesByUID(min0, uidNext0);
 			for (Message message : messages0) {
 				MessageParser mp = new MessageParser(message);
