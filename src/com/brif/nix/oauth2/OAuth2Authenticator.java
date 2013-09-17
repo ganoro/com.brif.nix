@@ -108,6 +108,19 @@ public class OAuth2Authenticator {
 					.getFolder("All Mail");
 			inbox.open(Folder.READ_ONLY);
 
+			
+			final long uidNext0 = inbox.getUIDNext();
+			long min0 = Math.max(1, uidNext0 - 2000);
+			final Message[] messages0 = inbox.getMessagesByUID(min0, uidNext0);
+			for (Message message : messages0) {
+				MessageParser mp = new MessageParser(message);
+				System.out.println(mp.getGroup() + "\t" + mp.getGroupUnique() + "\t" + mp.getThreadId() + "\t" + mp.getSubject());
+			}
+			
+			if (true) {
+				return;
+			}
+						
 			// TODO map reduce ?
 			final long uidNext = inbox.getUIDNext();
 			long min = Math.max(currentUser.next_uid, uidNext - 250);
