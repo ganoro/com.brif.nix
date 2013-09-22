@@ -69,7 +69,9 @@ public class DataAccess {
 		parseMessage.put("user_id", currentUser.objectId);
 		parseMessage.put("group_id", groupId);
 		parseMessage.put("from", mp.getFrom());
-		parseMessage.put("charset", mp.getCharset());
+		if (mp.getCharset() != null) {
+			parseMessage.put("charset", mp.getCharset());	
+		}
 		parseMessage.put("content", mp.getContent());
 		parseMessage.setCharset(mp.getCharset());
 		parseMessage.saveInBackground();
