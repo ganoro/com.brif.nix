@@ -67,6 +67,16 @@ public class MessageParser {
 		}
 		return allRecipients;
 	}
+	
+	public String getFrom() throws MessagingException {
+		final Address[] from = message.getFrom();
+		if (from.length > 0) {
+			InternetAddress ia = (InternetAddress) from[0];
+			return ia.getAddress();
+		}
+		return "";
+
+	}
 
 	public static <T> T[] concat(T[] first, T[] second) {
 		if (first == null) {
@@ -119,7 +129,7 @@ public class MessageParser {
 						.compareTo(a2.getAddress().toLowerCase());
 			}
 		});
-		StringBuffer result = new StringBuffer("{");
+		StringBuffer result = new StringBuffer();
 		Set<String> s = new HashSet<String>();
 		for (Address address : concat) {
 			InternetAddress a = (InternetAddress) address;
@@ -132,7 +142,6 @@ public class MessageParser {
 		if (result.length() > 1) {
 			result.deleteCharAt(result.length() - 1);
 		}
-		result.append("}");
 		return result.toString();
 	}
 	
