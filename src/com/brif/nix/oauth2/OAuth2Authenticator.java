@@ -282,7 +282,7 @@ public class OAuth2Authenticator {
 
 			try {
 				imapStore = connectToImap("imap.gmail.com", 993,
-						currentUser.email, currentUser.access_token, true);
+						currentUser.email, currentUser.access_token, false);
 			} catch (Exception e1) {
 				// TODO: invalid grant - application revoked???
 				// send a message
