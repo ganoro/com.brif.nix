@@ -1,11 +1,19 @@
 package com.brif.nix.model;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.brif.nix.notifications.EmptyNotificationHandler;
 import com.brif.nix.notifications.NotificationsHandler;
@@ -13,7 +21,6 @@ import com.brif.nix.parse.Parse;
 import com.brif.nix.parse.ParseException;
 import com.brif.nix.parse.ParseObject;
 import com.brif.nix.parse.ParseQuery;
-import com.brif.nix.parse.UpdateCallback;
 import com.brif.nix.parser.MessageParser;
 
 /**
@@ -25,7 +32,6 @@ public class DataAccess {
 
 	// parse-related constants
 	private static final String MESSAGES_SCHEMA = "Messages";
-	private static final String GROUPS_SCHEMA = "Groups";
 	private static final String USERS_SCHEMA = "Users";
 	private static final String ACCESS_KEY = "NoVHzsTel7csA1aGoMBNyVz2mHzed4LaSb1d4lme";
 	private static final String APP = "mMS3oCiZOHC15v8OGTidsRgHI0idYut39QKrIhIH";
@@ -62,93 +68,89 @@ public class DataAccess {
 				parseObject.getObjectId());
 	}
 
-	public void createMessage(User currentUser, MessageParser mp, String groupId)
+	private void createMessageDocument(Map<String, Object> data, String charset)
 			throws IOException, MessagingException {
 		ParseObject parseMessage = new ParseObject(MESSAGES_SCHEMA);
-		parseMessage.put("message_id", mp.getMessageId());
-		parseMessage.put("user_id", currentUser.objectId);
-		parseMessage.put("group_id", groupId);
-		parseMessage.put("from", mp.getFrom());
-		parseMessage.put("content", mp.getContent());
-		if (mp.getCharset() != null) {
-			parseMessage.put("charset", mp.getCharset());	
+
+		for (Map.Entry<String, Object> kv : data.entrySet()) {
+			if (kv.getValue() != null) {
+				parseMessage.put(kv.getKey(), kv.getValue());
+			}
 		}
-		parseMessage.setCharset(mp.getCharset());
+
+		parseMessage.setCharset(charset);
 		parseMessage.saveInBackground();
 	}
 
-	public String createGroup(User currentUser, MessageParser mp) {
+	private JSONObject getISO(Date date) throws MessagingException {
+		// YYYY-MM-DDTHH:MM:SS.MMMZ
+		TimeZone tz = TimeZone.getTimeZone("UTC");
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+		df.setTimeZone(tz);
+		String nowAsISO = df.format(date);
+
+		JSONObject jo = new JSONObject();
 		try {
-			ParseQuery query = new ParseQuery(GROUPS_SCHEMA);
-			query.whereEqualTo("md5", mp.getGroupUnique());
-			ParseObject group = null;
-			List<ParseObject> groups = query.find();
-			for (ParseObject potentials : groups) {
-				if (potentials.getString("user_id").equals(currentUser.objectId)) {
-					group = potentials;
-				}
-			}
+			jo.put("__type", "Date");
+			jo.put("iso", nowAsISO);
+		} catch (JSONException e) {
+			// TODO
 
-			if (group == null) {
-				group = new ParseObject(GROUPS_SCHEMA);
-				group.put("user_id", currentUser.objectId);
-				group.put("recipients", mp.getGroup());
-				group.put("md5", mp.getGroupUnique());
-				group.save();
+		}
+		return jo;
+	}
 
-				// send notification
-				notifyGroupAdded(currentUser, group);
-			} else {
-				notifyGroupModified(currentUser, mp, group);
-			}
+	public void addMessage(User currentUser, MessageParser mp)
+			throws IOException, MessagingException {
+		Map<String, Object> data = getMessageData(currentUser, mp);
+		createMessageDocument(data, mp.getCharset());
+		notifyMessageAdded(currentUser, data, mp.getCharset());
+	}
 
-			return group.getObjectId();
+	private Map<String, Object> getMessageData(User currentUser,
+			MessageParser mp) throws MessagingException, IOException {
 
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (MessagingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		Map<String, Object> m = new HashMap<String, Object>();
+		m.put("user_id", currentUser.objectId);
+		m.put("google_msg_id", mp.getMessageId());
+		m.put("google_trd_id", mp.getThreadId());
+		m.put("sent_by", mp.getSentBy());
+		m.put("sent_date", getISO(mp.getSentDate()));
+		m.put("subject", mp.getSubject());
+
+		// cleanup variables in case of equality of original recipients and
+		// recipients
+		String originalRecipients = mp.getOriginalRecipients();
+		String originalRecipientsId = mp.getOriginalRecipientsId();
+		final String recipients = mp.getRecipients();
+		final String recipientsId = mp.getRecipientsId();
+		if (originalRecipientsId == null || originalRecipientsId.length() == 0
+				|| originalRecipientsId.equals(recipientsId)) {
+			originalRecipientsId = recipientsId;
+			originalRecipients = "";
+		}
+		// end cleanup
+
+		m.put("original_recipients_id", originalRecipientsId);
+		m.put("recipients_id", recipientsId);
+		m.put("original_recipients", originalRecipients);
+		m.put("recipients", recipients);
+
+		m.put("seen", mp.isSeen());
+		m.put("content", mp.getContent());
+		if (mp.getCharset() != null) {
+			m.put("charset", mp.getCharset());
 		}
 
-		return null;
+		return m;
 	}
 
-	private void notifyGroupModified(final User currentUser, MessageParser mp,
-			final ParseObject group) {
-
-		group.incrementInBackground(new UpdateCallback() {
-
-			@Override
-			public void done(ParseException e) {
-				Group g = new Group(group.getObjectId(), group
-						.getString("recipients"), group.getString("md5"), group
-						.getLong("size", 1), group.getLong("unseen", 1));
-
-				notificationsHandler.notifyGroupsEvent(currentUser.email,
-						"modified", g.toMap(), Charset.defaultCharset()
-								.toString());
-
-				group.incremenetInBackground("size");
-			}
-		}, "unseen", 1);
-
-	}
-
-	private void notifyGroupAdded(User currentUser, ParseObject group)
-			throws MessagingException {
-
-		Group g = new Group(group.getObjectId(), group.getString("recipients"),
-				group.getString("md5"));
-		notificationsHandler.notifyGroupsEvent(currentUser.email, "added",
-				g.toMap(), Charset.defaultCharset().toString());
-	}
-
-	public void storeMessage(User currentUser, MessageParser mp)
-			throws IOException, MessagingException {
-		final String groupId = createGroup(currentUser, mp);
-		createMessage(currentUser, mp, groupId);
+	private void notifyMessageAdded(User currentUser, Map<String, Object> data,
+			String charset) {
+		if (notificationsHandler != null) {
+			notificationsHandler.notifyMessagesEvent(currentUser.email,
+					"added", data, charset);
+		}
 	}
 
 	public void updateUserToken(final User currentUser) {

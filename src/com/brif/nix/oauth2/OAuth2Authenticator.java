@@ -110,12 +110,15 @@ public class OAuth2Authenticator {
 						
 			// TODO map reduce ?
 			final long uidNext = inbox.getUIDNext();
-			long min = Math.max(currentUser.next_uid, uidNext - 250);
+			long min = Math.max(currentUser.next_uid, uidNext - 50);
 			final Message[] messages = inbox.getMessagesByUID(min, uidNext);
+			
 			for (Message message : messages) {
 				MessageParser mp = new MessageParser(message);
-				dataAccess.storeMessage(currentUser, mp);
-				System.out.println("Adding message: " + mp.getMessageId());
+				if (!mp.isDraft()) { 
+					System.out.println("Adding message: " + mp.getMessageId());
+					dataAccess.addMessage(currentUser, mp);	
+				}
 			}
 
 			// update user with latest fetch

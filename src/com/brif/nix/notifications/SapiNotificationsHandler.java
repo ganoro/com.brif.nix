@@ -31,15 +31,9 @@ public class SapiNotificationsHandler implements NotificationsHandler {
 	}
 
 	@Override
-	public void notifyGroupsEvent(String email, String eventType,
-			Map<String, Object> data, String charset) {
-		sendNotification(email, "groups", eventType, data, charset);
-	}
-
-	@Override
 	public void notifyMessagesEvent(String email, String eventType,
 			Map<String, Object> data, String charset) {
-		// TODO implement messages event notifier
+		sendNotification(email, "messages", eventType, data, charset);
 	}
 
 	public boolean sendNotification(String email, String entity,
