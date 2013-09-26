@@ -112,7 +112,7 @@ public class DataAccess {
 
 		Map<String, Object> m = new HashMap<String, Object>();
 		m.put("user_id", currentUser.objectId);
-		m.put("google_msg_id", mp.getMessageId());
+		m.put("msg_id", mp.getMessageId());
 		m.put("google_trd_id", mp.getThreadId());
 		m.put("sent_by", mp.getSentBy());
 		m.put("sent_date", getISO(mp.getSentDate()));

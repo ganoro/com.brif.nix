@@ -9,6 +9,7 @@ import java.util.Set;
 
 import javax.mail.Address;
 import javax.mail.Flags;
+import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
@@ -58,7 +59,8 @@ public class MessageParser {
 	}
 
 	public long getMessageId() throws MessagingException {
-		return message.getMsgId();
+		final GmailFolder folder = (GmailFolder) message.getFolder();
+		return folder.getUID(message);
 	}
 
 	public long getThreadId() throws MessagingException {

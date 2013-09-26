@@ -1,16 +1,5 @@
-/* Copyright 2012 Google Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/**
+ * Brif 
  */
 
 package com.brif.nix.oauth2;
@@ -25,7 +14,6 @@ import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
-import javax.mail.URLName;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
@@ -44,7 +32,6 @@ import com.sun.mail.gimap.GmailSSLStore;
 import com.sun.mail.iap.ProtocolException;
 import com.sun.mail.imap.IMAPFolder;
 import com.sun.mail.imap.protocol.IMAPProtocol;
-import com.sun.mail.smtp.SMTPTransport;
 
 /**
  * Performs OAuth2 authentication.
@@ -137,10 +124,6 @@ public class OAuth2Authenticator {
 				e.printStackTrace();
 			}
 		}
-
-		// SMTP connection
-		// SMTPTransport smtpTransport = connectToSmtp("smtp.gmail.com", 587,
-		// email, oauthToken, true);
 	}
 
 	/**
@@ -190,47 +173,6 @@ public class OAuth2Authenticator {
 	}
 
 	/**
-	 * Connects and authenticates to an SMTP server with OAuth2. You must have
-	 * called {@code initialize}.
-	 * 
-	 * @param host
-	 *            Hostname of the smtp server, for example
-	 *            {@code smtp.googlemail.com}.
-	 * @param port
-	 *            Port of the smtp server, for example 587.
-	 * @param userEmail
-	 *            Email address of the user to authenticate, for example
-	 *            {@code oauth@gmail.com}.
-	 * @param oauthToken
-	 *            The user's OAuth token.
-	 * @param debug
-	 *            Whether to enable debug logging on the connection.
-	 * 
-	 * @return An authenticated SMTPTransport that can be used for SMTP
-	 *         operations.
-	 */
-	public static SMTPTransport connectToSmtp(String host, int port,
-			String userEmail, String oauthToken, boolean debug)
-			throws Exception {
-		Properties props = new Properties();
-		props.put("mail.smtp.starttls.enable", "true");
-		props.put("mail.smtp.starttls.required", "true");
-		props.put("mail.smtp.sasl.enable", "true");
-		props.put("mail.smtp.sasl.mechanisms", "XOAUTH2");
-		props.put(OAuth2SaslClientFactory.OAUTH_TOKEN_PROP, oauthToken);
-		Session session = Session.getInstance(props);
-		session.setDebug(debug);
-
-		final URLName unusedUrlName = null;
-		SMTPTransport transport = new SMTPTransport(session, unusedUrlName);
-		// If the password is non-null, SMTP tries to do AUTH LOGIN.
-		final String emptyPassword = "";
-		transport.connect(host, port, userEmail, emptyPassword);
-
-		return transport;
-	}
-
-	/**
 	 * @param refreshToken
 	 * @param clientId
 	 * @param clientSecret
@@ -270,7 +212,7 @@ public class OAuth2Authenticator {
 		GmailSSLStore imapStore = null;
 		try {
 			imapStore = connectToImap("imap.gmail.com", 993, currentUser.email,
-					currentUser.access_token, false);
+					currentUser.access_token, true);
 		} catch (AuthenticationFailedException e) {
 			OAuth2Configuration conf = OAuth2Configuration
 					.getConfiguration(currentUser.origin);
@@ -282,7 +224,7 @@ public class OAuth2Authenticator {
 
 			try {
 				imapStore = connectToImap("imap.gmail.com", 993,
-						currentUser.email, currentUser.access_token, false);
+						currentUser.email, currentUser.access_token, true);
 			} catch (Exception e1) {
 				// TODO: invalid grant - application revoked???
 				// send a message
