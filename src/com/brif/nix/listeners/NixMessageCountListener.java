@@ -13,14 +13,15 @@ import javax.mail.event.MessageCountListener;
 import com.brif.nix.model.DataAccess;
 import com.brif.nix.model.User;
 import com.brif.nix.parser.MessageParser;
+import com.sun.mail.gimap.GmailFolder;
 import com.sun.mail.gimap.GmailMessage;
 
-public class NixListener implements MessageCountListener {
+public class NixMessageCountListener implements MessageCountListener {
 	
 	private final User currentUser;
 	private DataAccess dataAccess;
 
-	public NixListener(User currentUser, DataAccess dataAccess) {
+	public NixMessageCountListener(User currentUser, DataAccess dataAccess) {
 		this.currentUser = currentUser;
 		this.dataAccess = dataAccess;
 	}
@@ -30,8 +31,15 @@ public class NixListener implements MessageCountListener {
 		Message[] messages = arg0.getMessages();
 		for (Message message : messages) {
 			System.out.println(getTime() + "message removed");
+			final GmailFolder folder = (GmailFolder) message.getFolder();
+			try {
+				final long uid = folder.getUID(message);
+				dataAccess.removeMessage(uid);
+			} catch (MessagingException e) {
+				// TODO auto generated	
+				e.printStackTrace();
+			}
 			System.out.println(getTime() + message.getMessageNumber());
-			dataAccess.removeMessage(message);		
 		}
 	}
 

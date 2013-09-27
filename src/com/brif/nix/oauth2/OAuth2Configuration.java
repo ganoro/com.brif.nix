@@ -3,7 +3,6 @@ package com.brif.nix.oauth2;
 import java.io.IOException;
 import java.util.HashMap;
 
-import com.google.api.client.json.JsonParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
 
 public class OAuth2Configuration extends HashMap<String, String> {

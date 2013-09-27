@@ -63,10 +63,14 @@ public class MessageParser {
 		return folder.getUID(message);
 	}
 
-	public long getThreadId() throws MessagingException {
+	public long getGoogleThreadId() throws MessagingException {
 		return message.getThrId();
 	}
 
+	public long getGoogleMessageId() throws MessagingException {
+		return message.getMsgId();
+	}
+	
 	public String getRecipients() throws MessagingException {
 		if (this.allRecipients == null) {
 			this.allRecipients = this.resolveRecipientsString(

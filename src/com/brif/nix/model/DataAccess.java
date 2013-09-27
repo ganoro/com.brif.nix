@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-import javax.mail.Message;
 import javax.mail.MessagingException;
 
 import org.json.JSONException;
@@ -112,8 +111,9 @@ public class DataAccess {
 
 		Map<String, Object> m = new HashMap<String, Object>();
 		m.put("user_id", currentUser.objectId);
-		m.put("msg_id", mp.getMessageId());
-		m.put("google_trd_id", mp.getThreadId());
+		m.put("message_id", mp.getMessageId());
+		m.put("google_trd_id", mp.getGoogleThreadId());
+		m.put("google_msg_id", mp.getGoogleMessageId());
 		m.put("sent_by", mp.getSentBy());
 		m.put("sent_date", getISO(mp.getSentDate()));
 		m.put("subject", mp.getSubject());
@@ -167,9 +167,9 @@ public class DataAccess {
 		user.updateInBackground();
 	}
 
-	public void removeMessage(Message message) {
+	public void removeMessage(final long uid) {
 		ParseObject parseMessage = new ParseObject(MESSAGES_SCHEMA);
-		parseMessage.put("message_id", message.getMessageNumber());
+		parseMessage.put("message_id", uid);
 		parseMessage.deleteInBackground();
 	}
 }

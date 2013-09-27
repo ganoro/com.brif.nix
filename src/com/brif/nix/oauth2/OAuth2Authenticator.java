@@ -17,7 +17,8 @@ import javax.mail.Session;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
-import com.brif.nix.listeners.NixListener;
+import com.brif.nix.listeners.NixMessageChangeListener;
+import com.brif.nix.listeners.NixMessageCountListener;
 import com.brif.nix.model.DataAccess;
 import com.brif.nix.model.User;
 import com.brif.nix.notifications.SapiNotificationsHandler;
@@ -100,22 +101,23 @@ public class OAuth2Authenticator {
 			long min = Math.max(currentUser.next_uid, uidNext - 500);
 			final Message[] messages = inbox.getMessagesByUID(min, uidNext);
 			
-			for (Message message : messages) {
-				MessageParser mp = new MessageParser(message);
-				if (!mp.isDraft()) { 
-					System.out.println("Adding message: " + mp.getMessageId());
-					dataAccess.addMessage(currentUser, mp);	
-				}
-			}
+//			for (Message message : messages) {
+//				MessageParser mp = new MessageParser(message);
+//				if (!mp.isDraft()) { 
+//					System.out.println("Adding message: " + mp.getMessageId());
+//					dataAccess.addMessage(currentUser, mp);	
+//				}
+//			}
 
 			// update user with latest fetch
-			currentUser.next_uid = uidNext;
+			// currentUser.next_uid = uidNext;
 			dataAccess.updateUserNextUID(currentUser);
 
 			dataAccess = new DataAccess(new SapiNotificationsHandler(
 					"http://api.brif.us"));
-			inbox.addMessageCountListener(new NixListener(currentUser,
+			inbox.addMessageCountListener(new NixMessageCountListener(currentUser,
 					dataAccess));
+			inbox.addMessageChangedListener(new NixMessageChangeListener());
 
 			try {
 				startKeepAliveListener((IMAPFolder) inbox);
