@@ -9,6 +9,7 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.event.MessageCountEvent;
 import javax.mail.event.MessageCountListener;
+import javax.mail.internet.MimeUtility;
 
 import com.brif.nix.model.DataAccess;
 import com.brif.nix.model.User;

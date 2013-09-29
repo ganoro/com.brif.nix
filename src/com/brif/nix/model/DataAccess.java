@@ -136,7 +136,6 @@ public class DataAccess {
 		m.put("original_recipients", originalRecipients);
 		m.put("recipients", recipients);
 
-		m.put("seen", mp.isSeen());
 		m.put("content", mp.getContent());
 		if (mp.getCharset() != null) {
 			m.put("charset", mp.getCharset());

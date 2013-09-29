@@ -9,7 +9,6 @@ import java.util.Set;
 
 import javax.mail.Address;
 import javax.mail.Flags;
-import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
@@ -67,8 +66,8 @@ public class MessageParser {
 		return message.getThrId();
 	}
 
-	public long getGoogleMessageId() throws MessagingException {
-		return message.getMsgId();
+	public String getGoogleMessageId() throws MessagingException {
+		return Long.toString(message.getMsgId());
 	}
 	
 	public String getRecipients() throws MessagingException {
