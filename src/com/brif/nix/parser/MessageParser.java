@@ -13,6 +13,7 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMultipart;
+import javax.mail.internet.MimeUtility;
 import javax.mail.search.MessageIDTerm;
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -53,8 +54,26 @@ public class MessageParser {
 	}
 
 	public String getSubject() throws MessagingException {
+		final String header = this.message.getHeader("Subject", null);
+		setCharsetByValue(header);
+
 		final String subject = this.message.getSubject();
 		return subject == null ? "" : subject;
+	}
+
+	private void setCharsetByValue(final String rawvalue) {
+		if (rawvalue == null || !rawvalue.startsWith("=?"))
+			return;
+
+		int start = 2;
+		int pos;
+		if ((pos = rawvalue.indexOf('?', start)) != -1) {
+			String c = rawvalue.substring(start, pos);
+			int lpos = c.indexOf('*'); // RFC 2231 language specified?
+			if (lpos >= 0) // yes, throw it away
+				c = c.substring(0, lpos);
+			this.charset = javaCharset(c);
+		}
 	}
 
 	public long getMessageId() throws MessagingException {
@@ -69,7 +88,7 @@ public class MessageParser {
 	public String getGoogleMessageId() throws MessagingException {
 		return Long.toString(message.getMsgId());
 	}
-	
+
 	public String getRecipients() throws MessagingException {
 		if (this.allRecipients == null) {
 			this.allRecipients = this.resolveRecipientsString(
@@ -220,6 +239,19 @@ public class MessageParser {
 	}
 
 	public String getCharset() {
+		return charset;
+	}
+
+	/**
+	 * Convert a MIME charset name into a valid Java charset name.
+	 * <p>
+	 * 
+	 * @param charset
+	 *            the MIME charset name
+	 * @return the Java charset equivalent. If a suitable mapping is not
+	 *         available, the passed in charset is itself returned.
+	 */
+	public static String javaCharset(String charset) {
 		return charset;
 	}
 

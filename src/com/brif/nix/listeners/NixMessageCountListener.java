@@ -49,14 +49,12 @@ public class NixMessageCountListener implements MessageCountListener {
 		Message[] messages = arg0.getMessages();
 		for (Message message : messages) {
 			try {
-				if (iSself(message)) {
+				if (isDraft(message)) {
 					break;
 				} 
 				System.out.println(getTime() + "message added");
 				MessageParser mp = new MessageParser(message);
-				if (!mp.isDraft()) {
-					dataAccess.addMessage(currentUser, mp);	
-				}
+				dataAccess.addMessage(currentUser, mp);	
 				
 				// TODO better way to acquire / store the next uid? 
 				currentUser.next_uid = mp.getFolder().getUIDNext();
@@ -72,7 +70,7 @@ public class NixMessageCountListener implements MessageCountListener {
 		}
 	}
 
-	private boolean iSself(Message message) throws MessagingException {
+	private boolean isDraft(Message message) throws MessagingException {
 		GmailMessage gm = (GmailMessage) message;
 		final String[] labels = gm.getLabels();
 		return labels.length > 0 && "\\Draft".equals(labels[0]);  

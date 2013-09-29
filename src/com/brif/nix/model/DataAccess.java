@@ -94,7 +94,6 @@ public class DataAccess {
 			jo.put("iso", nowAsISO);
 		} catch (JSONException e) {
 			// TODO
-
 		}
 		return jo;
 	}
