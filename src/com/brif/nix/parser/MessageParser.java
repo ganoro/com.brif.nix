@@ -131,13 +131,13 @@ public class MessageParser {
 		return message.getSentDate();
 	}
 
-	public String getSentBy() throws MessagingException {
+	public String[] getSender() throws MessagingException {
 		final Address[] from = message.getFrom();
 		if (from.length > 0) {
 			InternetAddress ia = (InternetAddress) from[0];
-			return ia.getAddress();
+			return new String[] { ia.getAddress(), ia.getPersonal() };
 		}
-		return "";
+		return null;
 	}
 
 	public static <T> T[] concat(T[] first, T[] second) {

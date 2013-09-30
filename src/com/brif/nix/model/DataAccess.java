@@ -113,7 +113,16 @@ public class DataAccess {
 		m.put("message_id", mp.getMessageId());
 		m.put("google_trd_id", mp.getGoogleThreadId());
 		m.put("google_msg_id", mp.getGoogleMessageId());
-		m.put("sent_by", mp.getSentBy());
+		
+		//sender details
+		final String[] sentBy = mp.getSender();
+		if (sentBy != null && sentBy[0] != null) {
+			m.put("sender_email", sentBy[0]);
+			if (sentBy[1] != null) {
+				m.put("sender_name", sentBy[1]);
+			}	
+		}
+
 		m.put("sent_date", getISO(mp.getSentDate()));
 		m.put("subject", mp.getSubject());
 
