@@ -29,9 +29,9 @@ public class NixMessageCountListener implements MessageCountListener {
 	public void messagesRemoved(MessageCountEvent arg0) {
 		Message[] messages = arg0.getMessages();
 		for (Message message : messages) {
-			System.out.println(getTime() + "message removed (" + message.getMessageNumber() + ")");			System.out.println(message.getMessageNumber());
-			long uid = 0;
-			dataAccess.removeMessage(uid);
+			System.out.println(getTime() + "message removed ("
+					+ message.getMessageNumber() + ")");
+			dataAccess.removeMessage(message.getMessageNumber());
 			System.out.println(getTime() + message.getMessageNumber());
 		}
 	}
@@ -45,15 +45,17 @@ public class NixMessageCountListener implements MessageCountListener {
 					break;
 				}
 				final int messageNumber = message.getMessageNumber();
-				System.out.println(getTime() + "adding message (" + messageNumber + ")");
+				System.out.println(getTime() + "adding message ("
+						+ messageNumber + ")");
 				MessageParser mp = new MessageParser(message);
 				dataAccess.addMessage(currentUser, mp);
 
 				// TODO better way to acquire / store the next uid?
 				currentUser.next_uid = mp.getFolder().getUIDNext();
 				dataAccess.updateUserNextUID(currentUser);
-				
-				System.out.println(getTime() + "message added (" + messageNumber + ")");
+
+				System.out.println(getTime() + "message added ("
+						+ messageNumber + ")");
 
 			} catch (MessagingException e) {
 				// TODO Auto-generated catch block
