@@ -44,13 +44,16 @@ public class NixMessageCountListener implements MessageCountListener {
 				if (isDraft(message)) {
 					break;
 				}
-				System.out.println(getTime() + "message added (" + message.getMessageNumber() + ")");
+				final int messageNumber = message.getMessageNumber();
+				System.out.println(getTime() + "adding message (" + messageNumber + ")");
 				MessageParser mp = new MessageParser(message);
 				dataAccess.addMessage(currentUser, mp);
 
 				// TODO better way to acquire / store the next uid?
 				currentUser.next_uid = mp.getFolder().getUIDNext();
 				dataAccess.updateUserNextUID(currentUser);
+				
+				System.out.println(getTime() + "message added (" + messageNumber + ")");
 
 			} catch (MessagingException e) {
 				// TODO Auto-generated catch block

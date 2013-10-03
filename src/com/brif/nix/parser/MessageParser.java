@@ -319,8 +319,7 @@ public class MessageParser {
 			return "unknown";
 		}
 
-		String ret = MimeUtility.decodeText(name);
-		return ret;
+		return MimeUtility.decodeText(name);
 	}
 
 	/**
