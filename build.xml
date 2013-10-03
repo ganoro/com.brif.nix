@@ -97,7 +97,7 @@
     </target>
     
 	<target name="run">
-        <java classname="com.brif.nix.oauth2.OAuth2Authenticator" failonerror="true" fork="yes" maxmemory="128m">
+        <java classname="com.brif.nix.oauth2.OAuth2Authenticator" failonerror="true" fork="yes" maxmemory="256m">
             <arg line="${arg0}"/>
             <classpath refid="com.brif.nix.classpath"/>
         </java>
