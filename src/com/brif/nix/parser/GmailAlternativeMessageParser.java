@@ -56,16 +56,16 @@ public class GmailAlternativeMessageParser {
 	 */
 	private String getMessageCharset(final BodyPart bodyPart)
 			throws MessagingException {
-		final String[] header = bodyPart.getHeader("Content-Type");
-
-		if (header.length == 0) {
+		final String header = bodyPart.getContentType();
+		if (header == null) {
+			System.out.println("couldn't parse content type");
 			return DEFAULT_CHARSET;
 		}
 
-		final Pattern p = Pattern.compile("(\\w+)=(.+)");
-		final Matcher matcher = p.matcher(header[0]);
+		final Pattern p = Pattern.compile("(\\w+)\\s*=\\s*\\\"?([^\\s;\\\"]*)");
+		final Matcher matcher = p.matcher(header);
 		if (!matcher.find()) {
-			System.out.println("couldn't parse content type " + header[0]);
+			System.out.println("couldn't parse content type " + header);
 			return DEFAULT_CHARSET;
 		}
 		String charset = matcher.group(2);
