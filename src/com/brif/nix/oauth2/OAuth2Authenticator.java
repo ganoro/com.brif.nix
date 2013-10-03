@@ -94,17 +94,17 @@ public class OAuth2Authenticator {
 			GmailFolder inbox = (GmailFolder) imapStore.getFolder("[Gmail]")
 					.getFolder("All Mail");
 			inbox.open(Folder.READ_ONLY);
-						
+
 			// TODO map reduce ?
 			final long uidNext = inbox.getUIDNext();
 			long min = Math.max(currentUser.next_uid, uidNext - 250);
 			final Message[] messages = inbox.getMessagesByUID(min, uidNext);
-			
+
 			for (Message message : messages) {
 				MessageParser mp = new MessageParser(message);
-				if (!mp.isDraft()) { 
+				if (!mp.isDraft()) {
 					System.out.println("Adding message: " + mp.getMessageId());
-					dataAccess.addMessage(currentUser, mp);	
+					dataAccess.addMessage(currentUser, mp);
 				}
 			}
 
@@ -115,9 +115,9 @@ public class OAuth2Authenticator {
 			dataAccess = new DataAccess(new SapiNotificationsHandler(
 					"http://api.brif.us"));
 			// https://bugzilla.mozilla.org/show_bug.cgi?id=518581
-			inbox.addMessageCountListener(new NixMessageCountListener(currentUser,
-					dataAccess));
-			
+			inbox.addMessageCountListener(new NixMessageCountListener(
+					currentUser, dataAccess));
+
 			try {
 				startKeepAliveListener((IMAPFolder) inbox);
 			} catch (Exception e) {
@@ -211,9 +211,10 @@ public class OAuth2Authenticator {
 	private static GmailSSLStore connect(User currentUser) throws Exception,
 			IOException {
 		GmailSSLStore imapStore = null;
+		final boolean debug = false;
 		try {
 			imapStore = connectToImap("imap.gmail.com", 993, currentUser.email,
-					currentUser.access_token, true);
+					currentUser.access_token, debug);
 		} catch (AuthenticationFailedException e) {
 			OAuth2Configuration conf = OAuth2Configuration
 					.getConfiguration(currentUser.origin);
@@ -225,7 +226,7 @@ public class OAuth2Authenticator {
 
 			try {
 				imapStore = connectToImap("imap.gmail.com", 993,
-						currentUser.email, currentUser.access_token, true);
+						currentUser.email, currentUser.access_token, debug);
 			} catch (Exception e1) {
 				// TODO: invalid grant - application revoked???
 				// send a message

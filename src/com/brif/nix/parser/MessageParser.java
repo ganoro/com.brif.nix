@@ -1,6 +1,11 @@
 package com.brif.nix.parser;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
@@ -8,10 +13,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.mail.Address;
+import javax.mail.BodyPart;
 import javax.mail.Flags;
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.Part;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 import javax.mail.search.MessageIDTerm;
@@ -253,6 +261,63 @@ public class MessageParser {
 	 */
 	public static String javaCharset(String charset) {
 		return charset;
+	}
+
+	/**
+	 * Temporary method to get all  of a message 
+	 * @throws MessagingException
+	 * @throws IOException
+	 */
+	public void saveAttachments() throws MessagingException, IOException {
+		final MimeMultipart content = (MimeMultipart) message.getContent();
+		final int count = content.getCount();
+		for (int i = 0; i < count; i++) {
+			final BodyPart part = content.getBodyPart(i);
+			final String disposition2 = part.getDisposition();
+			final String disposition = disposition2 != null ? disposition2
+					.toLowerCase() : null;
+			if ((disposition != null)
+					&& (disposition.equals(Part.ATTACHMENT) || disposition
+							.equals(Part.INLINE))) {
+				// Check if plain
+				MimeBodyPart mbp = (MimeBodyPart) part;
+				if (!mbp.isMimeType("text/plain")) {
+					String name = decodeName(part.getFileName());
+					System.out.println(name);
+					File savedir = new File("/Users/roy/from_/");
+					savedir.mkdirs();
+					File savefile = new File("/Users/roy/from_/" + name);
+					saveFile(savefile, part);
+				}
+			}
+
+		}
+	}
+
+	protected int saveFile(File saveFile, Part part) throws IOException, MessagingException {
+
+		BufferedOutputStream bos = new BufferedOutputStream(
+				new FileOutputStream(saveFile));
+
+		byte[] buff = new byte[2048];
+		InputStream is = part.getInputStream();
+		int ret = 0, count = 0;
+		while ((ret = is.read(buff)) > 0) {
+			bos.write(buff, 0, ret);
+			count += ret;
+		}
+		bos.close();
+		is.close();
+		return count;
+	}
+
+	protected static String decodeName(String name) throws UnsupportedEncodingException {
+		if (name == null || name.length() == 0) {
+			return "unknown";
+		}
+
+		String ret = MimeUtility.decodeText(name);
+		return ret;
 	}
 
 }

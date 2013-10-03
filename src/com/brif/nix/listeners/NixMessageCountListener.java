@@ -9,7 +9,6 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.event.MessageCountEvent;
 import javax.mail.event.MessageCountListener;
-import javax.mail.internet.MimeUtility;
 
 import com.brif.nix.model.DataAccess;
 import com.brif.nix.model.User;
@@ -18,7 +17,7 @@ import com.sun.mail.gimap.GmailFolder;
 import com.sun.mail.gimap.GmailMessage;
 
 public class NixMessageCountListener implements MessageCountListener {
-	
+
 	private final User currentUser;
 	private DataAccess dataAccess;
 
@@ -37,7 +36,7 @@ public class NixMessageCountListener implements MessageCountListener {
 				final long uid = folder.getUID(message);
 				dataAccess.removeMessage(uid);
 			} catch (MessagingException e) {
-				// TODO auto generated	
+				// TODO auto generated
 				e.printStackTrace();
 			}
 			System.out.println(getTime() + message.getMessageNumber());
@@ -51,15 +50,15 @@ public class NixMessageCountListener implements MessageCountListener {
 			try {
 				if (isDraft(message)) {
 					break;
-				} 
+				}
 				System.out.println(getTime() + "message added");
 				MessageParser mp = new MessageParser(message);
-				dataAccess.addMessage(currentUser, mp);	
-				
-				// TODO better way to acquire / store the next uid? 
+				dataAccess.addMessage(currentUser, mp);
+
+				// TODO better way to acquire / store the next uid?
 				currentUser.next_uid = mp.getFolder().getUIDNext();
 				dataAccess.updateUserNextUID(currentUser);
-				
+
 			} catch (MessagingException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -73,7 +72,7 @@ public class NixMessageCountListener implements MessageCountListener {
 	private boolean isDraft(Message message) throws MessagingException {
 		GmailMessage gm = (GmailMessage) message;
 		final String[] labels = gm.getLabels();
-		return labels.length > 0 && "\\Draft".equals(labels[0]);  
+		return labels.length > 0 && "\\Draft".equals(labels[0]);
 	}
 
 	public static String getTime() {

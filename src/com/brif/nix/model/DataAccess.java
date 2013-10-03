@@ -100,8 +100,15 @@ public class DataAccess {
 
 	public void addMessage(User currentUser, MessageParser mp)
 			throws IOException, MessagingException {
+		// build the message data map
 		Map<String, Object> data = getMessageData(currentUser, mp);
+
+		// store in table
 		createMessageDocument(data, mp.getCharset());
+
+		// add the seen tag to the notification (not to table) and post
+		// notification
+		data.put("seen", mp.isSeen());
 		notifyMessageAdded(currentUser, data, mp.getCharset());
 	}
 
@@ -113,14 +120,14 @@ public class DataAccess {
 		m.put("message_id", mp.getMessageId());
 		m.put("google_trd_id", mp.getGoogleThreadId());
 		m.put("google_msg_id", mp.getGoogleMessageId());
-		
-		//sender details
+
+		// sender details
 		final String[] sentBy = mp.getSender();
 		if (sentBy != null && sentBy[0] != null) {
 			m.put("sender_email", sentBy[0]);
 			if (sentBy[1] != null) {
 				m.put("sender_name", sentBy[1]);
-			}	
+			}
 		}
 
 		m.put("sent_date", getISO(mp.getSentDate()));
