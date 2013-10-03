@@ -64,6 +64,7 @@ public class OAuth2Authenticator {
 			System.out.println("\t\tError loading user's email");
 			return;
 		}
+		
 		String email = args[0];
 
 		// initialize provider
@@ -71,6 +72,8 @@ public class OAuth2Authenticator {
 
 		// keeping this loop forever with different access_token
 		while (true) {
+			
+			logStatus();
 
 			// user info
 			DataAccess dataAccess = new DataAccess();
@@ -131,7 +134,20 @@ public class OAuth2Authenticator {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+
 		}
+	}
+
+	private static void logStatus() {
+		/* This will return Long.MAX_VALUE if there is no preset limit */
+	    long maxMemory = Runtime.getRuntime().maxMemory();
+	    /* Maximum amount of memory the JVM will attempt to use */
+	    System.out.println("Maximum memory (bytes): " + 
+	        (maxMemory == Long.MAX_VALUE ? "no limit" : maxMemory));
+
+	    /* Total memory currently in use by the JVM */
+	    System.out.println("Total memory (bytes): " + 
+	        Runtime.getRuntime().totalMemory());
 	}
 
 	/**
