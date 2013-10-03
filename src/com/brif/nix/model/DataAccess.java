@@ -197,7 +197,9 @@ public class DataAccess {
 		} catch (ParseException e) {
 			return;
 		}
+		System.out.println("found " + messages.size() + " messages to cleanup");
 		for (ParseObject message : messages) {
+			System.out.println("deleting " + message.getObjectId());
 			message.deleteInBackground();	
 		}
 	}
