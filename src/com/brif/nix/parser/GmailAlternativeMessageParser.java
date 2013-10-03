@@ -65,10 +65,11 @@ public class GmailAlternativeMessageParser {
 		final Pattern p = Pattern.compile("(\\w+)=(.+)");
 		final Matcher matcher = p.matcher(header[0]);
 		matcher.find();
-		if (matcher.groupCount() == 0) {
+		if (matcher.groupCount() < 2) {
+			System.out.println("couldn't parse content type " + header[0]);
 			return DEFAULT_CHARSET;
 		}
-
+		
 		String charset = matcher.group(2);
 		try {
 			charset = Charset.isSupported(charset) ? charset : DEFAULT_CHARSET;
