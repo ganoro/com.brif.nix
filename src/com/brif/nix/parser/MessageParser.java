@@ -80,7 +80,7 @@ public class MessageParser {
 			int lpos = c.indexOf('*'); // RFC 2231 language specified?
 			if (lpos >= 0) // yes, throw it away
 				c = c.substring(0, lpos);
-			this.charset = javaCharset(c);
+			this.setCharset(javaCharset(c));
 		}
 	}
 
@@ -179,13 +179,13 @@ public class MessageParser {
 				GmailMixedMessageParser mixed = new GmailMixedMessageParser(
 						multipart);
 				result = mixed.getContent();
-				charset = mixed.getCharset();
+				setCharset(mixed.getCharset());
 			} else if (multipart.getContentType().startsWith(
 					"multipart/ALTERNATIVE")) {
 				GmailAlternativeMessageParser p = new GmailAlternativeMessageParser(
 						multipart);
 				result = p.getContent();
-				charset = p.getCharset();
+				setCharset(p.getCharset());
 			}
 		}
 
@@ -264,7 +264,8 @@ public class MessageParser {
 	}
 
 	/**
-	 * Temporary method to get all  of a message 
+	 * Temporary method to get all of a message
+	 * 
 	 * @throws MessagingException
 	 * @throws IOException
 	 */
@@ -294,7 +295,8 @@ public class MessageParser {
 		}
 	}
 
-	protected int saveFile(File saveFile, Part part) throws IOException, MessagingException {
+	protected int saveFile(File saveFile, Part part) throws IOException,
+			MessagingException {
 
 		BufferedOutputStream bos = new BufferedOutputStream(
 				new FileOutputStream(saveFile));
@@ -311,13 +313,24 @@ public class MessageParser {
 		return count;
 	}
 
-	protected static String decodeName(String name) throws UnsupportedEncodingException {
+	protected static String decodeName(String name)
+			throws UnsupportedEncodingException {
 		if (name == null || name.length() == 0) {
 			return "unknown";
 		}
 
 		String ret = MimeUtility.decodeText(name);
 		return ret;
+	}
+
+	/**
+	 * @param charset
+	 *            the charset to set
+	 */
+	public void setCharset(String charset) {
+		if (charset == null || !"utf-8".equalsIgnoreCase(this.charset)) {
+			this.charset = charset;
+		}
 	}
 
 }

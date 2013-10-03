@@ -13,7 +13,6 @@ import javax.mail.event.MessageCountListener;
 import com.brif.nix.model.DataAccess;
 import com.brif.nix.model.User;
 import com.brif.nix.parser.MessageParser;
-import com.sun.mail.gimap.GmailFolder;
 import com.sun.mail.gimap.GmailMessage;
 
 public class NixMessageCountListener implements MessageCountListener {
@@ -30,15 +29,9 @@ public class NixMessageCountListener implements MessageCountListener {
 	public void messagesRemoved(MessageCountEvent arg0) {
 		Message[] messages = arg0.getMessages();
 		for (Message message : messages) {
-			System.out.println(getTime() + "message removed");
-			final GmailFolder folder = (GmailFolder) message.getFolder();
-			try {
-				final long uid = folder.getUID(message);
-				dataAccess.removeMessage(uid);
-			} catch (MessagingException e) {
-				// TODO auto generated
-				e.printStackTrace();
-			}
+			System.out.println(getTime() + "message removed (" + message.getMessageNumber() + ")");			System.out.println(message.getMessageNumber());
+			long uid = 0;
+			dataAccess.removeMessage(uid);
 			System.out.println(getTime() + message.getMessageNumber());
 		}
 	}
@@ -51,7 +44,7 @@ public class NixMessageCountListener implements MessageCountListener {
 				if (isDraft(message)) {
 					break;
 				}
-				System.out.println(getTime() + "message added");
+				System.out.println(getTime() + "message added (" + message.getMessageNumber() + ")");
 				MessageParser mp = new MessageParser(message);
 				dataAccess.addMessage(currentUser, mp);
 
