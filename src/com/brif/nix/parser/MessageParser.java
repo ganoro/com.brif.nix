@@ -89,8 +89,8 @@ public class MessageParser {
 		return folder.getUID(message);
 	}
 
-	public long getGoogleThreadId() throws MessagingException {
-		return message.getThrId();
+	public String getGoogleThreadId() throws MessagingException {
+		return Long.toString(message.getThrId());
 	}
 
 	public String getGoogleMessageId() throws MessagingException {
@@ -327,7 +327,7 @@ public class MessageParser {
 	 *            the charset to set
 	 */
 	public void setCharset(String charset) {
-		if (charset == null || !"utf-8".equalsIgnoreCase(this.charset)) {
+		if (this.charset == null || !"utf-8".equalsIgnoreCase(this.charset)) {
 			this.charset = charset;
 		}
 	}
