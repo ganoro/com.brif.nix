@@ -70,7 +70,7 @@ public class GmailAlternativeMessageParser {
 		}
 		String charset = matcher.group(2);
 		try {
-			charset = Charset.isSupported(charset) ? charset : DEFAULT_CHARSET;
+			charset = Charset.isSupported(charset) ? charset.toUpperCase() : DEFAULT_CHARSET;
 		} catch (IllegalCharsetNameException e) {
 			charset = DEFAULT_CHARSET;
 		}
