@@ -186,4 +186,19 @@ public class DataAccess {
 		parseMessage.put("message_id", uid);
 		parseMessage.deleteInBackground();
 	}
+
+	public void cleanupUnregisteredMessages(User currentUser) {
+		ParseQuery query1 = new ParseQuery(MESSAGES_SCHEMA);
+		query1.whereEqualTo("user_id", currentUser.objectId);
+		query1.whereGreaterThan("message_id", currentUser.next_uid - 1);
+		List<ParseObject> messages;
+		try {
+			messages = query1.find();
+		} catch (ParseException e) {
+			return;
+		}
+		for (ParseObject message : messages) {
+			message.deleteInBackground();	
+		}
+	}
 }

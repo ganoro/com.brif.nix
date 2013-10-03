@@ -79,6 +79,9 @@ public class OAuth2Authenticator {
 				System.out.println("user " + email + " couldn't be found");
 				return;
 			}
+			
+			// clean up redundant messages
+			dataAccess.cleanupUnregisteredMessages(currentUser);
 
 			String originalAccessToken = currentUser.access_token;
 
