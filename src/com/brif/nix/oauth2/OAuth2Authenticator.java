@@ -75,6 +75,10 @@ public class OAuth2Authenticator {
 			// user info
 			DataAccess dataAccess = new DataAccess();
 			final User currentUser = dataAccess.findByEmail(email);
+			if (currentUser == null) {
+				System.out.println("user " + email + " couldn't be found");
+				return;
+			}
 
 			String originalAccessToken = currentUser.access_token;
 
@@ -97,7 +101,7 @@ public class OAuth2Authenticator {
 
 			// TODO map reduce ?
 			final long uidNext = inbox.getUIDNext();
-			long min = Math.max(currentUser.next_uid, uidNext - 250);
+			long min = Math.max(currentUser.next_uid, uidNext - 300);
 			final Message[] messages = inbox.getMessagesByUID(min, uidNext);
 
 			for (Message message : messages) {
