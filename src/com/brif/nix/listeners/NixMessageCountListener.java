@@ -31,7 +31,8 @@ public class NixMessageCountListener implements MessageCountListener {
 		for (Message message : messages) {
 			System.out.println(getTime() + "message removed ("
 					+ message.getMessageNumber() + ")");
-			dataAccess.removeMessage(message.getMessageNumber());
+			dataAccess.removeMessage(currentUser.objectId,
+					message.getMessageNumber());
 			System.out.println(getTime() + message.getMessageNumber());
 		}
 	}

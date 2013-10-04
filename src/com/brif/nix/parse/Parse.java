@@ -7,6 +7,7 @@ public class Parse
 	
 	private static final String PARSE_API_URL = "https://api.parse.com";
 	private static final String PARSE_API_URL_CLASSES = "/1/classes/";
+	private static final String PARSE_API_URL_BATCH = "1/batch";
 	
 	/**
 	 * @param applicationId
@@ -22,4 +23,5 @@ public class Parse
 	static public String getRestAPIKey() {return mRestAPIKey;}
 	static public String getParseAPIUrl() {return PARSE_API_URL;}
 	static public String getParseAPIUrlClasses() {return getParseAPIUrl() + PARSE_API_URL_CLASSES;}
+	static public String getParseAPIUrlBatch() {return getParseAPIUrl() + PARSE_API_URL_BATCH;}
 }

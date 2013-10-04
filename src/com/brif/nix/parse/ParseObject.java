@@ -508,6 +508,7 @@ public class ParseObject {
 				save();
 			} catch (ParseException e) {
 				e.printStackTrace();
+				System.out.println(e.getStackTrace());
 				exception = e;
 			}
 

@@ -67,9 +67,9 @@ public class DataAccess {
 				parseObject.getObjectId());
 	}
 
-	private void createMessageDocument(Map<String, Object> data, String charset)
+	private void createMessageDocument(String userObjectId, Map<String, Object> data, String charset)
 			throws IOException, MessagingException {
-		ParseObject parseMessage = new ParseObject(MESSAGES_SCHEMA);
+		ParseObject parseMessage = new ParseObject(getMsgTableByUser(userObjectId));
 
 		for (Map.Entry<String, Object> kv : data.entrySet()) {
 			if (kv.getValue() != null) {
@@ -79,6 +79,10 @@ public class DataAccess {
 
 		parseMessage.setCharset(charset);
 		parseMessage.saveInBackground();
+	}
+
+	private static String getMsgTableByUser(String userObjectId) {
+		return MESSAGES_SCHEMA + "_" + userObjectId;
 	}
 
 	private JSONObject getISO(Date date) throws MessagingException {
@@ -104,7 +108,7 @@ public class DataAccess {
 		Map<String, Object> data = getMessageData(currentUser, mp);
 
 		// store in table
-		createMessageDocument(data, mp.getCharset());
+		createMessageDocument(currentUser.objectId, data, mp.getCharset());
 
 		// add the seen tag to the notification (not to table) and post
 		// notification
@@ -181,15 +185,14 @@ public class DataAccess {
 		user.updateInBackground();
 	}
 
-	public void removeMessage(final long uid) {
-		ParseObject parseMessage = new ParseObject(MESSAGES_SCHEMA);
+	public void removeMessage(final String userObjectId, final long uid) {
+		ParseObject parseMessage = new ParseObject(getMsgTableByUser(userObjectId));
 		parseMessage.put("message_id", uid);
 		parseMessage.deleteInBackground();
 	}
 
 	public void cleanupUnregisteredMessages(User currentUser) {
-		ParseQuery query1 = new ParseQuery(MESSAGES_SCHEMA);
-		query1.whereEqualTo("user_id", currentUser.objectId);
+		ParseQuery query1 = new ParseQuery(getMsgTableByUser(currentUser.objectId));
 		query1.whereGreaterThan("message_id", currentUser.next_uid - 1);
 		List<ParseObject> messages;
 		try {
