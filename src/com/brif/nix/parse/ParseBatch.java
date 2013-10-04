@@ -1,6 +1,7 @@
 package com.brif.nix.parse;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -54,12 +55,12 @@ public class ParseBatch {
 
 	protected boolean pushByClass(Method method, String className,
 			Map<String, Object> data) {
-		return push(method, Parse.getParseAPIUrlClasses() + className, data);
+		return push(method, Parse.getParseAPIShortUrlClass() + className, data);
 	}
 
 	protected boolean pushByClassObject(Method method, String className,
 			String objectId, Map<String, Object> data) {
-		return push(method, Parse.getParseAPIUrlClasses() + className + "/"
+		return push(method, Parse.getParseAPIShortUrlClass() + className + "/"
 				+ objectId, data);
 	}
 
@@ -78,13 +79,20 @@ public class ParseBatch {
 
 	public void batch() throws ParseException, JSONException,
 			ClientProtocolException, IOException {
-		
+
 		this.batch(null);
 	}
 
 	public void batch(String charset) throws ParseException, JSONException,
 			ClientProtocolException, IOException {
+		for (int i=0;i < requests.size(); i+=50) {
+			postBatch(charset, i);
+		}
+	}
 
+	private void postBatch(String charset, int i) throws JSONException,
+			UnsupportedEncodingException, IOException, ClientProtocolException,
+			ParseException {
 		HttpClient httpclient = new DefaultHttpClient();
 		HttpPost httppost = new HttpPost(Parse.getParseAPIUrlBatch());
 		httppost.addHeader("X-Parse-Application-Id", Parse.getApplicationId());
@@ -92,7 +100,7 @@ public class ParseBatch {
 		httppost.addHeader("Content-Type", "application/json");
 
 		JSONObject jo = new JSONObject();
-		jo.put("requests", requests);
+		jo.put("requests", requests.subList(i, Math.min(i+49, requests.size())));
 
 		StringEntity stringEntity = null;
 		if (charset != null) {
@@ -106,14 +114,7 @@ public class ParseBatch {
 
 		ParseResponse response = new ParseResponse(httpresponse);
 
-		if (!response.isFailed()) {
-			JSONObject jsonResponse = response.getJsonObject();
-
-			if (jsonResponse == null) {
-				throw response.getException();
-			}
-
-		} else {
+		if (response.isFailed()) {
 			throw response.getException();
 		}
 	}
