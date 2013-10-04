@@ -84,7 +84,7 @@ public class OAuth2Authenticator {
 			}
 			
 			// clean up redundant messages
-			// dataAccess.cleanupUnregisteredMessages(currentUser);
+			dataAccess.cleanupUnregisteredMessages(currentUser);
 
 			String originalAccessToken = currentUser.access_token;
 

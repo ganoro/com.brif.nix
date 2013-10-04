@@ -11,12 +11,14 @@ import java.util.TimeZone;
 
 import javax.mail.MessagingException;
 
+import org.apache.http.client.ClientProtocolException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.brif.nix.notifications.EmptyNotificationHandler;
 import com.brif.nix.notifications.NotificationsHandler;
 import com.brif.nix.parse.Parse;
+import com.brif.nix.parse.ParseBatch;
 import com.brif.nix.parse.ParseException;
 import com.brif.nix.parse.ParseObject;
 import com.brif.nix.parse.ParseQuery;
@@ -192,18 +194,42 @@ public class DataAccess {
 	}
 
 	public void cleanupUnregisteredMessages(User currentUser) {
-		ParseQuery query1 = new ParseQuery(getMsgTableByUser(currentUser.objectId));
-		query1.whereGreaterThan("message_id", currentUser.next_uid - 1);
+		final String msgTableByUser = getMsgTableByUser(currentUser.objectId);
+		ParseQuery query1 = new ParseQuery(msgTableByUser);
+		query1.whereGreaterThan("message_id", currentUser.next_uid);
+		query1.setLimit(3000);
 		List<ParseObject> messages;
 		try {
 			messages = query1.find();
 		} catch (ParseException e) {
 			return;
 		}
+		
+		if (messages.size() == 0) {
+			System.out.println("No messages found  for a cleanup");
+			return;
+		}
+		
 		System.out.println("found " + messages.size() + " messages to cleanup");
+		final ParseBatch parseBatch = new ParseBatch();
 		for (ParseObject message : messages) {
-			System.out.println("deleting " + message.getObjectId());
-			message.deleteInBackground();
+			parseBatch.delete(msgTableByUser, message.getObjectId());
+		}
+		
+		try {
+			parseBatch.batch();
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 }

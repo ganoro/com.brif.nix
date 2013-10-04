@@ -8,13 +8,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,11 +24,12 @@ import org.json.JSONObject;
  * 
  * @author js
  */
-public class ParseQuery
-{
+public class ParseQuery {
 	private String mClassName; // the name of the Parse class to perform the
 								// query on
 	private SimpleEntry mWhereEqualTo = null; // tracks "WHERE" constraints
+	private SimpleEntry mWhereGreaterThan = null; // tracks "WHERE" constraints
+
 	private List<String> mOrder = new ArrayList<String>(); // tracks keys to
 															// sort by
 
@@ -50,8 +49,7 @@ public class ParseQuery
 	 * @param className
 	 *            The name of the class to retrieve ParseObjects for.
 	 */
-	public ParseQuery(String className)
-	{
+	public ParseQuery(String className) {
 		mClassName = className;
 	}
 
@@ -60,8 +58,7 @@ public class ParseQuery
 	 * thread.
 	 * 
 	 */
-	class GetInBackgroundThread extends Thread
-	{
+	class GetInBackgroundThread extends Thread {
 		GetCallback mGetCallback;
 		String mObjectId;
 
@@ -69,21 +66,16 @@ public class ParseQuery
 		 * @param objectId
 		 * @param callback
 		 */
-		GetInBackgroundThread(String objectId, GetCallback callback)
-		{
+		GetInBackgroundThread(String objectId, GetCallback callback) {
 			mGetCallback = callback;
 			mObjectId = objectId;
 		}
 
-		public void run()
-		{
-			try
-			{
+		public void run() {
+			try {
 				ParseObject getObject = get(mObjectId);
 				mGetCallback.done(getObject);
-			}
-			catch (ParseException e)
-			{
+			} catch (ParseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -102,8 +94,7 @@ public class ParseQuery
 	 *            callback.done(object, e) will be called when the fetch
 	 *            completes.
 	 */
-	public void getInBackground(String objectId, GetCallback callback)
-	{
+	public void getInBackground(String objectId, GetCallback callback) {
 		GetInBackgroundThread t = new GetInBackgroundThread(objectId, callback);
 		t.start();
 	}
@@ -119,35 +110,27 @@ public class ParseQuery
 	 *             Throws an exception when there is no such object or when the
 	 *             network connection fails.
 	 */
-	public ParseObject get(String theObjectId) throws ParseException
-	{
-		try
-		{
+	public ParseObject get(String theObjectId) throws ParseException {
+		try {
 			HttpClient httpclient = new DefaultHttpClient();
-			HttpGet httpget = new HttpGet(Parse.getParseAPIUrlClasses() + mClassName + "/"
-					+ theObjectId);
-			httpget.addHeader("X-Parse-Application-Id", Parse.getApplicationId());
+			HttpGet httpget = new HttpGet(Parse.getParseAPIUrlClasses()
+					+ mClassName + "/" + theObjectId);
+			httpget.addHeader("X-Parse-Application-Id",
+					Parse.getApplicationId());
 			httpget.addHeader("X-Parse-REST-API-Key", Parse.getRestAPIKey());
 
 			HttpResponse httpResponse = httpclient.execute(httpget);
 
 			ParseResponse response = new ParseResponse(httpResponse);
 
-			if (!response.isFailed())
-			{
+			if (!response.isFailed()) {
 				return new ParseObject(mClassName, response.getJsonObject());
-			}
-			else
-			{
+			} else {
 				throw response.getException();
 			}
-		}
-		catch (ClientProtocolException e)
-		{
+		} catch (ClientProtocolException e) {
 			throw ParseResponse.getConnectionFailedException(e.getMessage());
-		}
-		catch (IOException e)
-		{
+		} catch (IOException e) {
 			throw ParseResponse.getConnectionFailedException(e.getMessage());
 		}
 	}
@@ -156,30 +139,24 @@ public class ParseQuery
 	 * A thread used to execute a ParseQuery find off of the main thread.
 	 * 
 	 */
-	private class FindInBackgroundThread extends Thread
-	{
+	private class FindInBackgroundThread extends Thread {
 		FindCallback mFindCallback;
 
-		FindInBackgroundThread(FindCallback callback)
-		{
+		FindInBackgroundThread(FindCallback callback) {
 			mFindCallback = callback;
 		}
 
-		public void run()
-		{
+		public void run() {
 			List<ParseObject> objects = null;
 			ParseException exception = null;
-			
-			try
-			{
+
+			try {
 				objects = find();
-			}
-			catch (ParseException e)
-			{
+			} catch (ParseException e) {
 				exception = e;
 			}
-			
-			mFindCallback.done (objects, exception);
+
+			mFindCallback.done(objects, exception);
 		}
 	}
 
@@ -192,8 +169,7 @@ public class ParseQuery
 	 *            callback - callback.done(object, e) is called when the find
 	 *            completes.
 	 */
-	public void findInBackground(FindCallback callback)
-	{
+	public void findInBackground(FindCallback callback) {
 		FindInBackgroundThread t = new FindInBackgroundThread(callback);
 		t.start();
 	}
@@ -205,43 +181,37 @@ public class ParseQuery
 	 * @return A list of all ParseObjects obeying the conditions set in this
 	 *         query.
 	 */
-	public List<ParseObject> find() throws ParseException
-	{
-		try
-		{
+	public List<ParseObject> find() throws ParseException {
+		try {
 			HttpClient httpclient = new DefaultHttpClient();
-			HttpGet httpget = new HttpGet(Parse.getParseAPIUrlClasses() + mClassName
-					+ getURLConstraints());
-			httpget.addHeader("X-Parse-Application-Id", Parse.getApplicationId());
+			HttpGet httpget = new HttpGet(Parse.getParseAPIUrlClasses()
+					+ mClassName + getURLConstraints());
+			httpget.addHeader("X-Parse-Application-Id",
+					Parse.getApplicationId());
 			httpget.addHeader("X-Parse-REST-API-Key", Parse.getRestAPIKey());
 
 			HttpResponse httpResponse = httpclient.execute(httpget);
 			ParseResponse parseResponse = new ParseResponse(httpResponse);
 
-			if (parseResponse.isFailed())
-			{
+			if (parseResponse.isFailed()) {
 				throw parseResponse.getException();
 			}
 
 			JSONObject obj = parseResponse.getJsonObject();
 
-			if (obj == null)
-			{
+			if (obj == null) {
 				throw parseResponse.getException();
 			}
 
-			try
-			{
+			try {
 				ArrayList<ParseObject> objects = new ArrayList<ParseObject>();
 				JSONArray results = obj.getJSONArray("results");
 
-				for (int i = 0; i < results.length(); i++)
-				{
+				for (int i = 0; i < results.length(); i++) {
 					ParseObject parseObject = new ParseObject(mClassName);
 					JSONObject jsonObject = results.getJSONObject(i);
 
-					for (String name : JSONObject.getNames(jsonObject))
-					{
+					for (String name : JSONObject.getNames(jsonObject)) {
 						parseObject.put(name, jsonObject.get(name));
 					}
 
@@ -250,19 +220,15 @@ public class ParseQuery
 				}
 
 				return objects;
+			} catch (JSONException e) {
+				throw new ParseException(
+						ParseException.INVALID_JSON,
+						"Error parsing the array of results returned by query.",
+						e);
 			}
-			catch (JSONException e)
-			{
-				throw new ParseException(ParseException.INVALID_JSON,
-						"Error parsing the array of results returned by query.", e);
-			}
-		}
-		catch (ClientProtocolException e)
-		{
+		} catch (ClientProtocolException e) {
 			throw ParseResponse.getConnectionFailedException(e);
-		}
-		catch (IOException e)
-		{
+		} catch (IOException e) {
 			throw ParseResponse.getConnectionFailedException(e);
 		}
 	}
@@ -277,8 +243,7 @@ public class ParseQuery
 	 *            The value that the ParseObject must contain.
 	 * @return Returns the query, so you can chain this call.
 	 */
-	public ParseQuery whereEqualTo(String key, Object value)
-	{
+	public ParseQuery whereEqualTo(String key, Object value) {
 		mWhereEqualTo = new SimpleEntry<String, Object>(key, value);
 		return this;
 	}
@@ -293,9 +258,8 @@ public class ParseQuery
 	 *            The value that provides an lower bound.
 	 * @return Returns the query, so you can chain this call.
 	 */
-	public ParseQuery whereGreaterThan(String key, Object value)
-	{
-		// MultiValueMap map = new MultiValueMap();
+	public ParseQuery whereGreaterThan(String key, Object value) {
+		mWhereGreaterThan = new SimpleEntry<String, Object>(key, value);
 		return this;
 	}
 
@@ -304,29 +268,24 @@ public class ParseQuery
 	 * 
 	 * @return True if any type of constraints have been placed on the Query
 	 */
-	private boolean hasConstraints()
-	{
-		return hasWhereConstraints() || hasOrderConstraints() || hasLimitConstraints()
-				|| hasSkipConstraints();
+	private boolean hasConstraints() {
+		return hasWhereConstraints() || hasOrderConstraints()
+				|| hasLimitConstraints() || hasSkipConstraints();
 	}
 
-	private boolean hasLimitConstraints()
-	{
+	private boolean hasLimitConstraints() {
 		return mLimit >= 0;
 	}
 
-	private boolean hasWhereConstraints()
-	{
-		return mWhereEqualTo != null;
+	private boolean hasWhereConstraints() {
+		return mWhereEqualTo != null || mWhereGreaterThan != null;
 	}
 
-	private boolean hasOrderConstraints()
-	{
+	private boolean hasOrderConstraints() {
 		return !mOrder.isEmpty();
 	}
 
-	private boolean hasSkipConstraints()
-	{
+	private boolean hasSkipConstraints() {
 		return mSkip > 0;
 	}
 
@@ -338,40 +297,31 @@ public class ParseQuery
 	 * 
 	 * @return The URL formatted Query constraints.
 	 */
-	private String getURLConstraints()
-	{
+	private String getURLConstraints() {
 		String url = "";
 		Boolean firstParam = true;
 
-		try
-		{
+		try {
 
-			if (hasConstraints())
-			{
+			if (hasConstraints()) {
 				url = "?";
 
-				if (hasWhereConstraints())
-				{
-					if (!firstParam)
-					{
+				if (hasWhereConstraints()) {
+					if (!firstParam) {
 						url += "&";
-					}
-					else
-					{
+					} else {
 						firstParam = false;
 					}
 
-					url += "where=" + URLEncoder.encode(getJSONWhereConstraints(), "UTF-8");
+					url += "where="
+							+ URLEncoder.encode(getJSONWhereConstraints(),
+									"UTF-8");
 				}
 
-				if (hasOrderConstraints())
-				{
-					if (!firstParam)
-					{
+				if (hasOrderConstraints()) {
+					if (!firstParam) {
 						url += "&";
-					}
-					else
-					{
+					} else {
 						firstParam = false;
 					}
 
@@ -379,12 +329,10 @@ public class ParseQuery
 
 					String orderParams = "";
 
-					for (Iterator<String> i = mOrder.iterator(); i.hasNext();)
-					{
+					for (Iterator<String> i = mOrder.iterator(); i.hasNext();) {
 						orderParams += i.next();
 
-						if (i.hasNext())
-						{
+						if (i.hasNext()) {
 							orderParams += ",";
 						}
 					}
@@ -392,37 +340,27 @@ public class ParseQuery
 					url += URLEncoder.encode(orderParams, "UTF-8");
 				}
 
-				if (hasLimitConstraints())
-				{
-					if (!firstParam)
-					{
+				if (hasLimitConstraints()) {
+					if (!firstParam) {
 						url += "&";
-					}
-					else
-					{
+					} else {
 						firstParam = false;
 					}
 
 					url += URLEncoder.encode("limit=" + mLimit, "UTF-8");
 				}
 
-				if (hasSkipConstraints())
-				{
-					if (!firstParam)
-					{
+				if (hasSkipConstraints()) {
+					if (!firstParam) {
 						url += "&";
-					}
-					else
-					{
+					} else {
 						firstParam = false;
 					}
 
 					url += URLEncoder.encode("skip=" + mSkip, "UTF-8");
 				}
 			}
-		}
-		catch (UnsupportedEncodingException e)
-		{
+		} catch (UnsupportedEncodingException e) {
 			url = "";
 		}
 
@@ -435,21 +373,28 @@ public class ParseQuery
 	 * 
 	 * @return A Parse readable JSON string of constraints to place on a Query.
 	 */
-	private String getJSONWhereConstraints()
-	{
+	private String getJSONWhereConstraints() {
 		String js = "";
 
-		if (mWhereEqualTo != null)
-		{
+		if (mWhereEqualTo != null) {
 			JSONObject jo = new JSONObject();
 
-			try
-			{
-				jo.put(((String) mWhereEqualTo.getKey()), mWhereEqualTo.getValue());
+			try {
+				jo.put(((String) mWhereEqualTo.getKey()),
+						mWhereEqualTo.getValue());
 				js = jo.toString();
+			} catch (JSONException e) {
+				e.printStackTrace();
 			}
-			catch (JSONException e)
-			{
+		}
+		if (mWhereGreaterThan != null) {
+			try {
+				JSONObject gt = new JSONObject();
+				gt.put("$gte", mWhereGreaterThan.getValue());
+				JSONObject jo = new JSONObject();
+				jo.put(((String) mWhereGreaterThan.getKey()), gt);
+				js = jo.toString();
+			} catch (JSONException e) {
 				e.printStackTrace();
 			}
 		}
@@ -464,8 +409,7 @@ public class ParseQuery
 	 *            The key to order by.
 	 * @return Returns the query, so you can chain this call.
 	 */
-	public ParseQuery orderByDescending(String key)
-	{
+	public ParseQuery orderByDescending(String key) {
 		mOrder.add("-" + key);
 		return this;
 	}
@@ -478,8 +422,7 @@ public class ParseQuery
 	 *            The key to order by.
 	 * @return Returns the query so you can chain this call.
 	 */
-	public ParseQuery addDescendingOrder(String key)
-	{
+	public ParseQuery addDescendingOrder(String key) {
 		return orderByDescending(key);
 	}
 
@@ -490,8 +433,7 @@ public class ParseQuery
 	 *            The key to order by.
 	 * @return Returns the query, so you can chain this call.
 	 */
-	public ParseQuery orderByAscending(String key)
-	{
+	public ParseQuery orderByAscending(String key) {
 		mOrder.add(key);
 		return this;
 	}
@@ -504,8 +446,7 @@ public class ParseQuery
 	 *            The key to order by.
 	 * @return Returns the query so you can chain this call.
 	 */
-	public ParseQuery addAscendingOrder(String key)
-	{
+	public ParseQuery addAscendingOrder(String key) {
 		return orderByAscending(key);
 	}
 
@@ -515,8 +456,7 @@ public class ParseQuery
 	 * 
 	 * @param newLimit
 	 */
-	public void setLimit(int newLimit)
-	{
+	public void setLimit(int newLimit) {
 		mLimit = newLimit;
 	}
 
@@ -526,8 +466,7 @@ public class ParseQuery
 	 * 
 	 * @return
 	 */
-	public int getLimit()
-	{
+	public int getLimit() {
 		return mLimit;
 	}
 
@@ -537,10 +476,8 @@ public class ParseQuery
 	 * 
 	 * @param newSkip
 	 */
-	public void setSkip(int newSkip)
-	{
-		if (newSkip < 0)
-		{
+	public void setSkip(int newSkip) {
+		if (newSkip < 0) {
 			return;
 		}
 
@@ -552,8 +489,7 @@ public class ParseQuery
 	 * 
 	 * @return
 	 */
-	public int getSkip()
-	{
+	public int getSkip() {
 		return mSkip;
 	}
 }

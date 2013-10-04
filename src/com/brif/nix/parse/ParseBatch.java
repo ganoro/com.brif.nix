@@ -76,6 +76,12 @@ public class ParseBatch {
 		return jo;
 	}
 
+	public void batch() throws ParseException, JSONException,
+			ClientProtocolException, IOException {
+		
+		this.batch(null);
+	}
+
 	public void batch(String charset) throws ParseException, JSONException,
 			ClientProtocolException, IOException {
 
