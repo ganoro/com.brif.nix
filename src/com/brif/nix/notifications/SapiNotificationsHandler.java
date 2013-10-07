@@ -32,15 +32,14 @@ public class SapiNotificationsHandler implements NotificationsHandler {
 
 	@Override
 	public void notifyMessagesEvent(String email, String eventType,
-			Map<String, Object> data, String charset) {
-		sendNotification(email, "messages", eventType, data, charset);
+			Map<String, Object> data) {
+		sendNotification(email, "messages", eventType, data);
 	}
 
 	public boolean sendNotification(String email, String entity,
-			String eventType, Map<String, Object> notificationAttributes,
-			String charset) {
+			String eventType, Map<String, Object> notificationAttributes) {
 		try {
-			sendPost(email, entity, eventType, notificationAttributes, charset);
+			sendPost(email, entity, eventType, notificationAttributes);
 		} catch (ClientProtocolException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -52,7 +51,7 @@ public class SapiNotificationsHandler implements NotificationsHandler {
 	}
 
 	public void sendPost(String email, String entity, String eventType,
-			Map<String, Object> notificationAttributes, String charset)
+			Map<String, Object> notificationAttributes)
 			throws ClientProtocolException, IOException {
 		HttpClient httpclient = new DefaultHttpClient();
 		HttpPost httppost = new HttpPost(this.endpoint);
@@ -61,11 +60,7 @@ public class SapiNotificationsHandler implements NotificationsHandler {
 		StringEntity stringEntity;
 		JSONObject jsonObject = getResultJSON(email, entity, eventType,
 				notificationAttributes);
-		if (charset != null) {
-			stringEntity = new StringEntity(jsonObject.toString(), charset);
-		} else {
-			stringEntity = new StringEntity(jsonObject.toString());
-		}
+		stringEntity = new StringEntity(jsonObject.toString(), "UTF-8");
 
 		httppost.setEntity(stringEntity);
 		HttpResponse httpresponse = httpclient.execute(httppost);

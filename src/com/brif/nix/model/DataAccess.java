@@ -1,5 +1,6 @@
 package com.brif.nix.model;
 
+import java.awt.image.ConvolveOp;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -69,9 +70,11 @@ public class DataAccess {
 				parseObject.getObjectId());
 	}
 
-	private void createMessageDocument(String userObjectId, Map<String, Object> data, String charset)
-			throws IOException, MessagingException {
-		ParseObject parseMessage = new ParseObject(getMsgTableByUser(userObjectId));
+	private void createMessageDocument(String userObjectId,
+			Map<String, Object> data) throws IOException,
+			MessagingException {
+		ParseObject parseMessage = new ParseObject(
+				getMsgTableByUser(userObjectId));
 
 		for (Map.Entry<String, Object> kv : data.entrySet()) {
 			if (kv.getValue() != null) {
@@ -79,7 +82,6 @@ public class DataAccess {
 			}
 		}
 
-		parseMessage.setCharset(charset);
 		parseMessage.saveInBackground();
 	}
 
@@ -110,12 +112,12 @@ public class DataAccess {
 		Map<String, Object> data = getMessageData(currentUser, mp);
 
 		// store in table
-		createMessageDocument(currentUser.objectId, data, mp.getCharset());
+		createMessageDocument(currentUser.objectId, data);
 
 		// add the seen tag to the notification (not to table) and post
 		// notification
 		data.put("seen", mp.isSeen());
-		notifyMessageAdded(currentUser, data, mp.getCharset());
+		notifyMessageAdded(currentUser, data);
 	}
 
 	private Map<String, Object> getMessageData(User currentUser,
@@ -158,18 +160,14 @@ public class DataAccess {
 		m.put("recipients", recipients);
 
 		m.put("content", mp.getContent());
-		if (mp.getCharset() != null) {
-			m.put("charset", mp.getCharset());
-		}
 
 		return m;
 	}
 
-	private void notifyMessageAdded(User currentUser, Map<String, Object> data,
-			String charset) {
+	private void notifyMessageAdded(User currentUser, Map<String, Object> data) {
 		if (notificationsHandler != null) {
 			notificationsHandler.notifyMessagesEvent(currentUser.email,
-					"added", data, charset);
+					"added", data);
 		}
 	}
 
@@ -188,7 +186,8 @@ public class DataAccess {
 	}
 
 	public void removeMessage(final String userObjectId, final long uid) {
-		ParseObject parseMessage = new ParseObject(getMsgTableByUser(userObjectId));
+		ParseObject parseMessage = new ParseObject(
+				getMsgTableByUser(userObjectId));
 		parseMessage.put("message_id", uid);
 		parseMessage.deleteInBackground();
 	}
@@ -204,18 +203,18 @@ public class DataAccess {
 		} catch (ParseException e) {
 			return;
 		}
-		
+
 		if (messages.size() == 0) {
 			System.out.println("No messages found  for a cleanup");
 			return;
 		}
-		
+
 		System.out.println("found " + messages.size() + " messages to cleanup");
 		final ParseBatch parseBatch = new ParseBatch();
 		for (ParseObject message : messages) {
 			parseBatch.delete(msgTableByUser, message.getObjectId());
 		}
-		
+
 		try {
 			parseBatch.batch();
 		} catch (ClientProtocolException e) {

@@ -5,6 +5,6 @@ import java.util.Map;
 public interface NotificationsHandler {
 
 	public void notifyMessagesEvent(String email, String eventType,
-			Map<String, Object> data, String charset);
+			Map<String, Object> data);
 
 }

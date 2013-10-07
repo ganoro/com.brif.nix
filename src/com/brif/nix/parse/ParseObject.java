@@ -65,7 +65,6 @@ public class ParseObject {
 	private String mClassName;
 
 	private Hashtable<String, Object> mData;
-	private String charset;
 
 	/**
 	 * Constructs a new ParseObject with no data in it. A ParseObject
@@ -278,10 +277,6 @@ public class ParseObject {
 		mData.put("objectId", objectId);
 	}
 
-	public void setCharset(String charset) {
-		this.charset = charset;
-	}
-
 	public void setCreatedAt(String createdAt) {
 		mData.put("createdAt", createdAt);
 	}
@@ -442,12 +437,7 @@ public class ParseObject {
 			httppost.addHeader("Content-Type", "application/json");
 
 			StringEntity stringEntity = null;
-			if (this.charset != null) {
-				stringEntity = new StringEntity(toJSONObject().toString(),
-						charset);
-			} else {
-				stringEntity = new StringEntity(toJSONObject().toString());
-			}
+			stringEntity = new StringEntity(toJSONObject().toString(), "UTF-8");
 
 			httppost.setEntity(stringEntity);
 			HttpResponse httpresponse = httpclient.execute(httppost);
@@ -647,8 +637,8 @@ public class ParseObject {
 
 	/**
 	 * Increments this object to the server. Typically, you should use
-	 * incrementInBackground(com.parse.UpdateCallback) instead of this, unless you
-	 * are managing your own threading.
+	 * incrementInBackground(com.parse.UpdateCallback) instead of this, unless
+	 * you are managing your own threading.
 	 * 
 	 * @throws ParseException
 	 *             Throws an exception if the server is inaccessible.
@@ -753,16 +743,16 @@ public class ParseObject {
 	}
 
 	/**
-	 * Increments this object to the server in a background thread. Use this when you
-	 * do not have code to run on completion of the push.
+	 * Increments this object to the server in a background thread. Use this
+	 * when you do not have code to run on completion of the push.
 	 */
 	public void incremenetInBackground(String key, int amount) {
 		incrementInBackground(null, key, amount);
 	}
 
 	/**
-	 * Increments this object to the server in a background thread. Use this when you
-	 * do not have code to run on completion of the push.
+	 * Increments this object to the server in a background thread. Use this
+	 * when you do not have code to run on completion of the push.
 	 */
 	public void incremenetInBackground(String key) {
 		incremenetInBackground(key, 1);

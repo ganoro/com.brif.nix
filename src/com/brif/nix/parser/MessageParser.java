@@ -16,6 +16,7 @@ import javax.mail.Address;
 import javax.mail.BodyPart;
 import javax.mail.Flags;
 import javax.mail.Message;
+import javax.mail.Message.RecipientType;
 import javax.mail.MessagingException;
 import javax.mail.Part;
 import javax.mail.internet.InternetAddress;
@@ -31,10 +32,12 @@ import com.sun.mail.gimap.GmailMessage;
 
 public class MessageParser {
 
+	private static final String UTF_8 = "UTF-8";
+
 	private GmailMessage message;
 	private String allRecipients;
+	private String allRecipientsNames;
 	private String originalRecipients;
-	private String charset;
 
 	public MessageParser(Message message) {
 		if (message == null || !(message instanceof GmailMessage)) {
@@ -63,15 +66,14 @@ public class MessageParser {
 
 	public String getSubject() throws MessagingException {
 		final String header = this.message.getHeader("Subject", null);
-		setCharsetByValue(header);
-
-		final String subject = this.message.getSubject();
+		final String c = getCharsetByHeader(header);
+		final String subject = convertToUTF(message.getSubject(), c);
 		return subject == null ? "" : subject;
 	}
 
-	private void setCharsetByValue(final String rawvalue) {
+	private String getCharsetByHeader(final String rawvalue) {
 		if (rawvalue == null || !rawvalue.startsWith("=?"))
-			return;
+			return UTF_8;
 
 		int start = 2;
 		int pos;
@@ -80,8 +82,9 @@ public class MessageParser {
 			int lpos = c.indexOf('*'); // RFC 2231 language specified?
 			if (lpos >= 0) // yes, throw it away
 				c = c.substring(0, lpos);
-			this.setCharset(javaCharset(c));
+			return javaCharset(c);
 		}
+		return UTF_8;
 	}
 
 	public long getMessageId() throws MessagingException {
@@ -99,6 +102,10 @@ public class MessageParser {
 
 	public String getRecipients() throws MessagingException {
 		if (this.allRecipients == null) {
+			final Address[] to = message.getRecipients(RecipientType.TO);
+			final Address[] cc = message.getRecipients(RecipientType.CC);
+			final Address[] bcc = message.getRecipients(RecipientType.BCC);
+			
 			this.allRecipients = this.resolveRecipientsString(
 					message.getAllRecipients(), message.getFrom());
 		}
@@ -143,7 +150,10 @@ public class MessageParser {
 		final Address[] from = message.getFrom();
 		if (from.length > 0) {
 			InternetAddress ia = (InternetAddress) from[0];
-			return new String[] { ia.getAddress(), ia.getPersonal() };
+			final String c = getCharsetByHeader(message.getHeader("From", null));
+			final String per = convertToUTF(ia.getPersonal(), c);
+			final String add = convertToUTF(ia.getAddress(), c);
+			return new String[] { add, per };
 		}
 		return null;
 	}
@@ -179,17 +189,15 @@ public class MessageParser {
 				GmailMixedMessageParser mixed = new GmailMixedMessageParser(
 						multipart);
 				result = mixed.getContent();
-				setCharset(mixed.getCharset());
 			} else if (multipart.getContentType().startsWith(
 					"multipart/ALTERNATIVE")) {
 				GmailAlternativeMessageParser p = new GmailAlternativeMessageParser(
 						multipart);
 				result = p.getContent();
-				setCharset(p.getCharset());
 			}
 		}
 
-		return result.length() != 0 ? result : getSubject() == null ? ""
+		return result.length() != 0 ? convertToUTF(result, null) : getSubject() == null ? ""
 				: getSubject();
 	}
 
@@ -244,10 +252,6 @@ public class MessageParser {
 			e.printStackTrace();
 			return "error";
 		}
-	}
-
-	public String getCharset() {
-		return charset;
 	}
 
 	/**
@@ -322,14 +326,19 @@ public class MessageParser {
 		return MimeUtility.decodeText(name);
 	}
 
-	/**
-	 * @param charset
-	 *            the charset to set
-	 */
-	public void setCharset(String charset) {
-		if (this.charset == null || !"utf-8".equalsIgnoreCase(this.charset)) {
-			this.charset = charset;
+	protected String convertToUTF(final String original, String charset) {
+		if (UTF_8.equals(charset))
+			return original;
+
+		String string;
+		try {
+			string = new String(original.getBytes(UTF_8), UTF_8);
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			string = "Unsupported Encoding" + e.getMessage();
 		}
+		return string;
 	}
 
 }

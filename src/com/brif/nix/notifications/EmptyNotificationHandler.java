@@ -6,7 +6,7 @@ public class EmptyNotificationHandler implements NotificationsHandler {
 
 	@Override
 	public void notifyMessagesEvent(String email, String eventType,
-			Map<String, Object> data, String charset) {
+			Map<String, Object> data) {
 		System.out.println("notifyMessagesEvent");
 	}
 
