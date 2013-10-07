@@ -146,6 +146,7 @@ public class DataAccess {
 		String originalRecipients = mp.getOriginalRecipients();
 		String originalRecipientsId = mp.getOriginalRecipientsId();
 		final String recipients = mp.getRecipients();
+		final String recipientsNames = mp.getRecipientsName();
 		final String recipientsId = mp.getRecipientsId();
 		if (originalRecipientsId == null || originalRecipientsId.length() == 0
 				|| originalRecipientsId.equals(recipientsId)) {
@@ -158,9 +159,9 @@ public class DataAccess {
 		m.put("recipients_id", recipientsId);
 		m.put("original_recipients", originalRecipients);
 		m.put("recipients", recipients);
+		m.put("recipients_names", recipientsNames);
 
 		m.put("content", mp.getContent());
-
 		return m;
 	}
 

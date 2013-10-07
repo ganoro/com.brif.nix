@@ -16,7 +16,6 @@ import javax.mail.Address;
 import javax.mail.BodyPart;
 import javax.mail.Flags;
 import javax.mail.Message;
-import javax.mail.Message.RecipientType;
 import javax.mail.MessagingException;
 import javax.mail.Part;
 import javax.mail.internet.InternetAddress;
@@ -102,14 +101,19 @@ public class MessageParser {
 
 	public String getRecipients() throws MessagingException {
 		if (this.allRecipients == null) {
-			final Address[] to = message.getRecipients(RecipientType.TO);
-			final Address[] cc = message.getRecipients(RecipientType.CC);
-			final Address[] bcc = message.getRecipients(RecipientType.BCC);
-			
-			this.allRecipients = this.resolveRecipientsString(
+			final String[] recipients = this.resolveRecipientsString(
 					message.getAllRecipients(), message.getFrom());
+			this.allRecipients = recipients[0];
+			this.allRecipientsNames = recipients[1];
 		}
 		return allRecipients;
+	}
+
+	public String getRecipientsName() throws MessagingException {
+		if (this.allRecipients == null) {
+			getRecipients();
+		}
+		return allRecipientsNames;
 	}
 
 	public String getOriginalRecipientsId() throws MessagingException {
@@ -134,9 +138,8 @@ public class MessageParser {
 			final GmailFolder folder = (GmailFolder) message.getFolder();
 			final Message[] search = folder.search(new MessageIDTerm(ref[0]
 					.substring(1, ref[0].indexOf(">"))));
-			originalRecipients = search.length > 0 ? this
-					.resolveRecipientsString(search[0].getAllRecipients(),
-							search[0].getFrom()) : "";
+			originalRecipients = search.length > 0 ? this.resolveRecipientsString(
+					search[0].getAllRecipients(), search[0].getFrom())[0] : "";
 		}
 		return originalRecipients;
 
@@ -171,7 +174,8 @@ public class MessageParser {
 	}
 
 	public String getRecipientsId() throws MessagingException {
-		return DigestUtils.md5Hex(this.getRecipients());
+		final String recipients = this.getRecipients();
+		return DigestUtils.md5Hex(recipients);
 	}
 
 	public String getContent() throws IOException, MessagingException {
@@ -197,11 +201,11 @@ public class MessageParser {
 			}
 		}
 
-		return result.length() != 0 ? convertToUTF(result, null) : getSubject() == null ? ""
-				: getSubject();
+		return result.length() != 0 ? convertToUTF(result, null)
+				: getSubject() == null ? "" : getSubject();
 	}
 
-	private String resolveRecipientsString(Address[] allRecipients,
+	private String[] resolveRecipientsString(Address[] allRecipients,
 			Address[] from) {
 		Address[] concat = concat(allRecipients, from);
 		Arrays.sort(concat, new Comparator<Address>() {
@@ -213,20 +217,26 @@ public class MessageParser {
 						.compareTo(a2.getAddress().toLowerCase());
 			}
 		});
-		StringBuffer result = new StringBuffer();
+		StringBuffer result1 = new StringBuffer();
+		StringBuffer result2 = new StringBuffer();
 		Set<String> s = new HashSet<String>();
 		for (Address address : concat) {
 			InternetAddress a = (InternetAddress) address;
 			String lcAddress = a.getAddress().toLowerCase();
 			if (s.add(lcAddress)) {
-				result.append(lcAddress);
-				result.append(",");
+				result1.append(lcAddress);
+				result1.append(",");
+				final String personal = a.getPersonal();
+				result2.append(personal == null ? lcAddress : personal.replace(
+						',', ' '));
+				result2.append(",");
 			}
 		}
-		if (result.length() > 1) {
-			result.deleteCharAt(result.length() - 1);
+		if (result1.length() > 1) {
+			result1.deleteCharAt(result1.length() - 1);
+			result2.deleteCharAt(result2.length() - 1);
 		}
-		return result.toString();
+		return new String[] { result1.toString(), result2.toString() };
 	}
 
 	@Override
