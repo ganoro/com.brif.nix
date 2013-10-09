@@ -6,35 +6,47 @@ import java.nio.charset.IllegalCharsetNameException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.mail.BodyPart;
 import javax.mail.MessagingException;
+import javax.mail.Part;
 import javax.mail.internet.MimeMultipart;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-public class GmailAlternativeMessageParser {
+public class AlternativeContentParser implements MimePraser {
 
 	private static final String DEFAULT_CHARSET = "UTF-8";
 	private MimeMultipart body;
 	private String charset;
 
-	public GmailAlternativeMessageParser(MimeMultipart multipart) {
+	public AlternativeContentParser(MimeMultipart multipart) {
 		this.body = multipart;
 	}
 
 	public String getContent() {
 		try {
-			final int count = this.body.getCount();
-			final BodyPart bodyPart = this.body.getBodyPart(count == 1 ? 0 : 1);
-			charset = getMessageCharset(bodyPart);
-			Document doc = Jsoup.parse(bodyPart.getInputStream(), charset, "");
-			doc.select(".gmail_quote").remove();
-			if (doc.text().trim().length() !=0) {
-				return doc.outerHtml();	
-			} else {
-				return "";
+			String text = null;
+			for (int i = 0; i < body.getCount(); i++) {
+				Part bp = body.getBodyPart(i);
+				if (bp.isMimeType("text/plain")) {
+					text = (String) bp.getContent();
+				} else if (bp.isMimeType("text/html")) {
+					String charset = getMessageCharset(bp);
+					Document doc = Jsoup
+							.parse(bp.getInputStream(), charset, "");
+					doc.select(".gmail_quote").remove();
+					if (doc.text().trim().length() != 0) {
+						return doc.outerHtml();
+					} else {
+						return "";
+					}
+				} else {
+					final MimePraser parser = MimeParserFactory.getParser(bp);
+					return parser.getContent();
+				}
 			}
+			return text;
+
 		} catch (MessagingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -44,17 +56,17 @@ public class GmailAlternativeMessageParser {
 		}
 		return "";
 	}
-	
+
 	public String getCharset() {
 		return charset;
 	}
 
 	/**
 	 * @param bodyPart
-	 * @return message CharSet 
+	 * @return message CharSet
 	 * @throws MessagingException
 	 */
-	private String getMessageCharset(final BodyPart bodyPart)
+	private String getMessageCharset(final Part bodyPart)
 			throws MessagingException {
 		final String header = bodyPart.getContentType();
 		if (header == null) {
@@ -70,7 +82,8 @@ public class GmailAlternativeMessageParser {
 		}
 		String charset = matcher.group(2);
 		try {
-			charset = Charset.isSupported(charset) ? charset.toUpperCase() : DEFAULT_CHARSET;
+			charset = Charset.isSupported(charset) ? charset.toUpperCase()
+					: DEFAULT_CHARSET;
 		} catch (IllegalCharsetNameException e) {
 			charset = DEFAULT_CHARSET;
 		}

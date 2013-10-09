@@ -138,8 +138,9 @@ public class MessageParser {
 			final GmailFolder folder = (GmailFolder) message.getFolder();
 			final Message[] search = folder.search(new MessageIDTerm(ref[0]
 					.substring(1, ref[0].indexOf(">"))));
-			originalRecipients = search.length > 0 ? this.resolveRecipientsString(
-					search[0].getAllRecipients(), search[0].getFrom())[0] : "";
+			originalRecipients = search.length > 0 ? this
+					.resolveRecipientsString(search[0].getAllRecipients(),
+							search[0].getFrom())[0] : "";
 		}
 		return originalRecipients;
 
@@ -179,28 +180,8 @@ public class MessageParser {
 	}
 
 	public String getContent() throws IOException, MessagingException {
-		final Object content = message.getContent();
-		String result = "";
-		if (content instanceof String) {
-			final HTMLMessageParser htmlMessageParser = new HTMLMessageParser(
-					(String) content);
-			result = htmlMessageParser.getContent();
-		}
-
-		if (content instanceof MimeMultipart) {
-			final MimeMultipart multipart = (MimeMultipart) content;
-			if (multipart.getContentType().startsWith("multipart/MIXED")) {
-				GmailMixedMessageParser mixed = new GmailMixedMessageParser(
-						multipart);
-				result = mixed.getContent();
-			} else if (multipart.getContentType().startsWith(
-					"multipart/ALTERNATIVE")) {
-				GmailAlternativeMessageParser p = new GmailAlternativeMessageParser(
-						multipart);
-				result = p.getContent();
-			}
-		}
-
+		final MimePraser parser = MimeParserFactory.getParser(message);
+		String result = parser.getContent();
 		return result.length() != 0 ? convertToUTF(result, null)
 				: getSubject() == null ? "" : getSubject();
 	}
