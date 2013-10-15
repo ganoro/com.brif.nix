@@ -1,6 +1,5 @@
 package com.brif.nix.model;
 
-import java.awt.image.ConvolveOp;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -13,6 +12,7 @@ import java.util.TimeZone;
 import javax.mail.MessagingException;
 
 import org.apache.http.client.ClientProtocolException;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -162,6 +162,10 @@ public class DataAccess {
 		m.put("recipients_names", recipientsNames);
 
 		m.put("content", mp.getContent());
+		final JSONArray attachments = mp.getAttachments();
+		if (attachments != null) {
+			m.put("attachments", attachments);	
+		}
 		return m;
 	}
 

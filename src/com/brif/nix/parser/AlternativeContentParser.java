@@ -13,15 +13,14 @@ import javax.mail.internet.MimeMultipart;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-public class AlternativeContentParser implements MimePraser {
+public class AlternativeContentParser extends MultiPartParser implements MimePraser {
+
+	public AlternativeContentParser(MimeMultipart body) {
+		super(body);
+	}
 
 	private static final String DEFAULT_CHARSET = "UTF-8";
-	private MimeMultipart body;
 	private String charset;
-
-	public AlternativeContentParser(MimeMultipart multipart) {
-		this.body = multipart;
-	}
 
 	public String getContent() {
 		try {

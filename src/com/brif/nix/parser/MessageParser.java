@@ -6,14 +6,17 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.mail.Address;
 import javax.mail.BodyPart;
+import javax.mail.FetchProfile;
 import javax.mail.Flags;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -25,8 +28,14 @@ import javax.mail.internet.MimeUtility;
 import javax.mail.search.MessageIDTerm;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.codehaus.jackson.annotate.JsonValue;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONStringer;
 
 import com.sun.mail.gimap.GmailFolder;
+import com.sun.mail.gimap.GmailFolder.FetchProfileItem;
 import com.sun.mail.gimap.GmailMessage;
 
 public class MessageParser {
@@ -38,12 +47,62 @@ public class MessageParser {
 	private String allRecipientsNames;
 	private String originalRecipients;
 
+	private static FetchProfile fp = new FetchProfile();
+	private static Message[] container = new Message[1];
+
+	static {
+		fp.add(FetchProfileItem.CONTENT_INFO);
+		fp.add(FetchProfileItem.ENVELOPE);
+		fp.add(FetchProfileItem.FLAGS);
+		fp.add(FetchProfileItem.SIZE);
+		fp.add(FetchProfileItem.LABELS);
+		fp.add(FetchProfileItem.MSGID);
+		fp.add(FetchProfileItem.THRID);
+		fp.add(FetchProfile.Item.CONTENT_INFO);
+		fp.add("BODY");
+	}
+
+	public static class MessageAttachment {
+		String app;
+		String name;
+		String link;
+
+		public MessageAttachment(String dispositionType,
+				String dispositionFilename, String link) {
+			this.app = dispositionType;
+			this.name = dispositionFilename;
+			this.link = link;
+		}
+
+		public JSONObject toJSONObject() {
+			JSONObject jo = new JSONObject();
+			try {
+				jo.put("app", app);
+				jo.put("name", name);
+				jo.put("link", link);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return jo;
+		}
+	}
+
 	public MessageParser(Message message) {
 		if (message == null || !(message instanceof GmailMessage)) {
 			throw new IllegalArgumentException("empty message in "
 					+ getClass().getCanonicalName());
 		}
 		this.message = (GmailMessage) message;
+		final GmailFolder folder = (GmailFolder) this.message.getFolder();
+		container[0] = this.message;
+
+		try {
+			folder.fetch(container, fp);
+		} catch (MessagingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public GmailFolder getFolder() {
@@ -182,8 +241,26 @@ public class MessageParser {
 	public String getContent() throws IOException, MessagingException {
 		final MimePraser parser = MimeParserFactory.getParser(message);
 		String result = parser.getContent();
-		return result.length() != 0 ? convertToUTF(result, null)
-				: getSubject() == null ? "" : getSubject();
+		if (result.length()  == 0) {
+			return getSubject() == null ? "" : getSubject();
+		}
+		result = result.substring(0, Math.min(result.length(), 70000));
+		return convertToUTF(result, null);
+	}
+
+	public JSONArray getAttachments() {
+		final MimePraser parser = MimeParserFactory.getParser(message);
+		List<MessageAttachment> atts = new ArrayList<MessageAttachment>();
+		parser.collectAttachments(atts);
+		if (atts.size() == 0) {
+			return null;
+		}
+		
+		final JSONArray jsonArray = new JSONArray();
+		for (MessageAttachment messageAttachment : atts) {
+			jsonArray.put(messageAttachment.toJSONObject());
+		}
+		return jsonArray;
 	}
 
 	private String[] resolveRecipientsString(Address[] allRecipients,
