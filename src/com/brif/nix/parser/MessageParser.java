@@ -28,11 +28,9 @@ import javax.mail.internet.MimeUtility;
 import javax.mail.search.MessageIDTerm;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.codehaus.jackson.annotate.JsonValue;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONStringer;
 
 import com.sun.mail.gimap.GmailFolder;
 import com.sun.mail.gimap.GmailFolder.FetchProfileItem;

@@ -183,13 +183,6 @@ public class DataAccess {
 		user.updateInBackground();
 	}
 
-	public void updateUserNextUID(final User currentUser) {
-		ParseObject user = new ParseObject(USERS_SCHEMA);
-		user.setObjectId(currentUser.objectId);
-		user.put("next_uid", currentUser.next_uid);
-		user.updateInBackground();
-	}
-
 	public void removeMessage(final String userObjectId, final long uid) {
 		ParseObject parseMessage = new ParseObject(
 				getMsgTableByUser(userObjectId));

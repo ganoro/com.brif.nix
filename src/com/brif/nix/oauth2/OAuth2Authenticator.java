@@ -64,7 +64,7 @@ public class OAuth2Authenticator {
 			System.out.println("\t\tError loading user's email");
 			return;
 		}
-		
+
 		String email = args[0];
 
 		// initialize provider
@@ -72,7 +72,7 @@ public class OAuth2Authenticator {
 
 		// keeping this loop forever with different access_token
 		while (true) {
-			
+
 			logStatus();
 
 			// user info
@@ -82,7 +82,7 @@ public class OAuth2Authenticator {
 				System.out.println("user " + email + " couldn't be found");
 				return;
 			}
-			
+
 			// clean up redundant messages
 			dataAccess.cleanupUnregisteredMessages(currentUser);
 
@@ -108,20 +108,16 @@ public class OAuth2Authenticator {
 			// TODO map reduce ?
 			final long uidNext = inbox.getUIDNext();
 			long min = Math.max(currentUser.next_uid, uidNext - 500);
-			
-			final Message[] messages = inbox.getMessagesByUID(min, uidNext);
 
-			for (Message message : messages) {
+			final Message[] messages = inbox.getMessagesByUID(min, uidNext);
+			for (int i = messages.length - 1; i >= 0; i--) {
+				Message message = messages[i];
 				MessageParser mp = new MessageParser(message);
 				if (!mp.isDraft()) {
 					System.out.println("Adding message: " + mp.getMessageId());
 					dataAccess.addMessage(currentUser, mp);
 				}
 			}
-
-			// update user with latest fetch
-			currentUser.next_uid = uidNext;
-			dataAccess.updateUserNextUID(currentUser);
 
 			dataAccess = new DataAccess(new SapiNotificationsHandler(
 					"http://api.brif.us"));
@@ -141,14 +137,14 @@ public class OAuth2Authenticator {
 
 	private static void logStatus() {
 		/* This will return Long.MAX_VALUE if there is no preset limit */
-	    long maxMemory = Runtime.getRuntime().maxMemory();
-	    /* Maximum amount of memory the JVM will attempt to use */
-	    System.out.println("Maximum memory (bytes): " + 
-	        (maxMemory == Long.MAX_VALUE ? "no limit" : maxMemory));
+		long maxMemory = Runtime.getRuntime().maxMemory();
+		/* Maximum amount of memory the JVM will attempt to use */
+		System.out.println("Maximum memory (bytes): "
+				+ (maxMemory == Long.MAX_VALUE ? "no limit" : maxMemory));
 
-	    /* Total memory currently in use by the JVM */
-	    System.out.println("Total memory (bytes): " + 
-	        Runtime.getRuntime().totalMemory());
+		/* Total memory currently in use by the JVM */
+		System.out.println("Total memory (bytes): "
+				+ Runtime.getRuntime().totalMemory());
 	}
 
 	/**
@@ -240,14 +236,10 @@ public class OAuth2Authenticator {
 			imapStore = connectToImap("imap.gmail.com", 993, currentUser.email,
 					currentUser.access_token, debug);
 		} catch (AuthenticationFailedException e) {
-			OAuth2Configuration conf = OAuth2Configuration
-					.getConfiguration(currentUser.origin);
-
-			final String access_token = refreshAccessToken(
-					currentUser.refresh_token, conf.get("client_id"),
-					conf.get("client_secret"));
-			currentUser.access_token = access_token;
-
+			
+			// try again... first invalidate access token
+			invalidateAccessToken(currentUser);
+			
 			try {
 				imapStore = connectToImap("imap.gmail.com", 993,
 						currentUser.email, currentUser.access_token, debug);
@@ -257,6 +249,19 @@ public class OAuth2Authenticator {
 			}
 		}
 		return imapStore;
+	}
+
+	protected static void invalidateAccessToken(User currentUser)
+			throws IOException {
+		
+		OAuth2Configuration conf = OAuth2Configuration
+				.getConfiguration(currentUser.origin);
+
+		final String access_token = refreshAccessToken(
+				currentUser.refresh_token, conf.get("client_id"),
+				conf.get("client_secret"));
+		
+		currentUser.access_token = access_token;
 	}
 
 	public static void startKeepAliveListener(IMAPFolder imapFolder)
