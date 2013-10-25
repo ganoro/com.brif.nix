@@ -1,7 +1,5 @@
 package com.brif.nix.parse;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class ParseException extends Exception
 {

@@ -83,9 +83,6 @@ public class OAuth2Authenticator {
 				return;
 			}
 
-			// clean up redundant messages
-			dataAccess.cleanupUnregisteredMessages(currentUser);
-
 			String originalAccessToken = currentUser.access_token;
 
 			// IMAP connection
@@ -107,7 +104,7 @@ public class OAuth2Authenticator {
 
 			// TODO map reduce ?
 			final long uidNext = inbox.getUIDNext();
-			long min = Math.max(currentUser.next_uid, uidNext - 500);
+			long min = Math.max(currentUser.next_uid + 1, uidNext - 500);
 
 			final Message[] messages = inbox.getMessagesByUID(min, uidNext);
 			for (int i = messages.length - 1; i >= 0; i--) {

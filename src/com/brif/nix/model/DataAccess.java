@@ -62,12 +62,34 @@ public class DataAccess {
 			return null;
 		}
 		final ParseObject parseObject = profiles.get(0);
-		final Long next_uid = parseObject.getLong("next_uid", 1);
+		
+		final Long next_uid = findLatestMessageId(parseObject.getObjectId());
 
 		return new User(email, parseObject.getString("access_token"),
 				parseObject.getString("refresh_token"),
 				parseObject.getString("origin"), next_uid,
 				parseObject.getObjectId());
+	}
+
+	private Long findLatestMessageId(String objectId) {
+		ParseQuery query1 = new ParseQuery(getMsgTableByUser(objectId));
+		query1.orderByDescending("message_id").setLimit(1);
+		List<ParseObject> messages;
+		try {
+			messages = query1.find();
+		} catch (ParseException e) {
+			return (long) 1;
+		}
+
+		if (messages.size() == 0) {
+			System.out.println("No messages found  for a cleanup");
+			return (long) 1;
+		}
+
+		final ParseObject parseObject = messages.get(0);
+		final long message_id = parseObject.getLong("message_id", 1);
+		System.out.println("latest message_id is " + message_id);
+		return message_id;
 	}
 
 	private void createMessageDocument(String userObjectId,
