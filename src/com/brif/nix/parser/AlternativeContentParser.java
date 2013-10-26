@@ -34,6 +34,7 @@ public class AlternativeContentParser extends MultiPartParser implements MimePra
 					Document doc = Jsoup
 							.parse(bp.getInputStream(), charset, "");
 					doc.select(".gmail_quote").remove();
+					doc.select("blockquote").remove();
 					if (doc.text().trim().length() != 0) {
 						return doc.outerHtml();
 					} else {
