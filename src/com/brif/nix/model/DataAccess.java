@@ -138,7 +138,7 @@ public class DataAccess {
 
 		// add the seen tag to the notification (not to table) and post
 		// notification
-		data.put("seen", mp.isSeen());
+		data.put("unseen", !mp.isSeen());
 		notifyMessageAdded(currentUser, data);
 	}
 
