@@ -25,7 +25,6 @@ public class MimeParserFactory {
 	}
 
 	public static MimePraser getParser(Part message) {
-
 		MimePraser result = null;
 		try {
 
