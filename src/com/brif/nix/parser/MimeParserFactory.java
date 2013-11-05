@@ -31,7 +31,7 @@ public class MimeParserFactory {
 
 			final Object content = message.getContent();
 			if (message.isMimeType("text/*")) {
-				result = new HTMLMessageParser(content, message);
+				result = new TextMessageParser(content, message);
 			} else if (message.isMimeType("multipart/alternative")) {
 				result = new AlternativeContentParser((MimeMultipart) content);
 			} else if (message.isMimeType("multipart/mixed")) {

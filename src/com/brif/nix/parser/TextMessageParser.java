@@ -6,19 +6,20 @@ import javax.mail.Part;
 
 import com.brif.nix.parser.MessageParser.MessageAttachment;
 
-public class HTMLMessageParser implements MimePraser {
+public class TextMessageParser implements MimePraser {
 
 	private Object content;
 	private Part message;
 
-	public HTMLMessageParser(Object content2, Part message) {
+	public TextMessageParser(Object content2, Part message) {
 		this.content = content2;
 		this.message = message;
 	}
 
 	public String getContent() {
 		if (this.content instanceof String) {
-			return (String) this.content;
+			final String content2 = (String) this.content;
+			return "<pre>" + content2 + "</pre>";
 		}
 		return "";
 	}

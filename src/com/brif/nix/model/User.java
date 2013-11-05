@@ -11,7 +11,6 @@ public class User {
 		this.origin = origin;
 		this.next_uid = nextUID;
 		this.objectId = objectId;
-
 	}
 
 	public String email;

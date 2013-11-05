@@ -108,4 +108,9 @@
             <classpath refid="com.brif.nix.classpath"/>
         </java>
     </target>
+	
+	<target name="protobuf-compile">
+		<exec executable="/usr/local/bin/protoc --java_out=src resorces/protobuf/message.proto"></exec>
+	</target>
+	
 </project>

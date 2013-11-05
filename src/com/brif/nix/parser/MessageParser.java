@@ -148,12 +148,12 @@ public class MessageParser {
 		return folder.getUID(message);
 	}
 
-	public String getGoogleThreadId() throws MessagingException {
-		return Long.toString(message.getThrId());
+	public long getGoogleThreadId() throws MessagingException {
+		return message.getThrId();
 	}
 
-	public String getGoogleMessageId() throws MessagingException {
-		return Long.toString(message.getMsgId());
+	public long getGoogleMessageId() throws MessagingException {
+		return message.getMsgId();
 	}
 
 	public String getRecipients() throws MessagingException {
@@ -211,7 +211,7 @@ public class MessageParser {
 		final Address[] from = message.getFrom();
 		if (from.length > 0) {
 			InternetAddress ia = (InternetAddress) from[0];
-			final String c = getCharsetByHeader(message.getHeader("From", null));
+			final String c = getCharsetByHeader(message.getHeader("From", ":"));
 			final String per = convertToUTF(ia.getPersonal(), c);
 			final String add = convertToUTF(ia.getAddress(), c);
 			return new String[] { add, per };
@@ -239,26 +239,33 @@ public class MessageParser {
 	public String getContent() throws IOException, MessagingException {
 		final MimePraser parser = MimeParserFactory.getParser(message);
 		String result = parser.getContent();
-		if (result.length()  == 0) {
+		if (result.length() == 0) {
 			return getSubject() == null ? "" : getSubject();
 		}
 		result = result.substring(0, Math.min(result.length(), 70000));
 		return convertToUTF(result, null);
 	}
 
-	public JSONArray getAttachments() {
+	public JSONArray getAttachmentsAsJSON() {
+		List<MessageAttachment> atts = getAttachments();
+		if (atts == null) {
+			return null;
+		}
+		final JSONArray jsonArray = new JSONArray();
+		for (MessageAttachment messageAttachment : atts) {
+			jsonArray.put(messageAttachment.toJSONObject());
+		}
+		return jsonArray;
+	}
+
+	protected List<MessageAttachment> getAttachments() {
 		final MimePraser parser = MimeParserFactory.getParser(message);
 		List<MessageAttachment> atts = new ArrayList<MessageAttachment>();
 		parser.collectAttachments(atts);
 		if (atts.size() == 0) {
 			return null;
 		}
-		
-		final JSONArray jsonArray = new JSONArray();
-		for (MessageAttachment messageAttachment : atts) {
-			jsonArray.put(messageAttachment.toJSONObject());
-		}
-		return jsonArray;
+		return atts;
 	}
 
 	private String[] resolveRecipientsString(Address[] allRecipients,

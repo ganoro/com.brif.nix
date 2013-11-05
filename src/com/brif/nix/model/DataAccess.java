@@ -10,7 +10,9 @@ import java.util.Map;
 import java.util.TimeZone;
 
 import javax.mail.MessagingException;
+import javax.mail.search.SentDateTerm;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.http.client.ClientProtocolException;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,6 +26,8 @@ import com.brif.nix.parse.ParseException;
 import com.brif.nix.parse.ParseObject;
 import com.brif.nix.parse.ParseQuery;
 import com.brif.nix.parser.MessageParser;
+import com.brif.nix.protobuf.MessageBuilder;
+import com.brif.nix.protobuf.generated.MessageProtos.Message;
 
 /**
  * Data access is only allowed here, decoupling data access to single point
@@ -62,7 +66,7 @@ public class DataAccess {
 			return null;
 		}
 		final ParseObject parseObject = profiles.get(0);
-		
+
 		final Long next_uid = findLatestMessageId(parseObject.getObjectId());
 
 		return new User(email, parseObject.getString("access_token"),
@@ -93,8 +97,7 @@ public class DataAccess {
 	}
 
 	private void createMessageDocument(String userObjectId,
-			Map<String, Object> data) throws IOException,
-			MessagingException {
+			Map<String, Object> data) throws IOException, MessagingException {
 		ParseObject parseMessage = new ParseObject(
 				getMsgTableByUser(userObjectId));
 
@@ -147,9 +150,12 @@ public class DataAccess {
 
 		Map<String, Object> m = new HashMap<String, Object>();
 		m.put("user_id", currentUser.objectId);
-		m.put("message_id", mp.getMessageId());
-		m.put("google_trd_id", mp.getGoogleThreadId());
-		m.put("google_msg_id", mp.getGoogleMessageId());
+		final long messageId = mp.getMessageId();
+		m.put("message_id", messageId);
+		final long googleThreadId = mp.getGoogleThreadId();
+		m.put("google_trd_id", Long.toString(googleThreadId));
+		final long googleMessageId = mp.getGoogleMessageId();
+		m.put("google_msg_id", Long.toString(googleMessageId));
 
 		// sender details
 		final String[] sentBy = mp.getSender();
@@ -160,8 +166,10 @@ public class DataAccess {
 			}
 		}
 
-		m.put("sent_date", getISO(mp.getSentDate()));
-		m.put("subject", mp.getSubject());
+		final Date sentDate = mp.getSentDate();
+		m.put("sent_date", getISO(sentDate));
+		final String subject = mp.getSubject();
+		m.put("subject", subject);
 
 		// cleanup variables in case of equality of original recipients and
 		// recipients
@@ -183,12 +191,32 @@ public class DataAccess {
 		m.put("recipients", recipients);
 		m.put("recipients_names", recipientsNames);
 
-		m.put("content", mp.getContent());
-		final JSONArray attachments = mp.getAttachments();
+		final String content = mp.getContent();
+		m.put("content", content);
+		final JSONArray attachments = mp.getAttachmentsAsJSON();
 		if (attachments != null) {
-			m.put("attachments", attachments);	
+			m.put("attachments", attachments);
 		}
+		
 		return m;
+	}
+
+	/**
+	 * @deprecated don't use me, no encoding w/ b64 for now...  
+	 */
+	protected void messageEncoder(User currentUser, Map<String, Object> m,
+			final long messageId, final long googleThreadId,
+			final long googleMessageId, final String[] sentBy,
+			final Date sentDate, final String subject,
+			final String recipientsNames, final String recipientsId,
+			final String content) throws IOException {
+		final Message message = MessageBuilder.buildMessage(currentUser.objectId, content,
+				googleMessageId, googleThreadId, messageId, recipientsId,
+				recipientsNames, sentBy[0], sentDate.toString(), subject);
+		
+		final byte[] messageAsBytes = MessageBuilder.getMessageAsBytes(message);
+		final byte[] encodeBase64 = Base64.encodeBase64(messageAsBytes);
+		m.put("base64", new String(encodeBase64));
 	}
 
 	private void notifyMessageAdded(User currentUser, Map<String, Object> data) {

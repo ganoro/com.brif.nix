@@ -1,27 +1,25 @@
 package tutorial;
 
-option java_package = "com.example.tutorial";
-option java_outer_classname = "AddressBookProtos";
+option java_package = "com.brif.nix.protobuf.generated";
+option java_outer_classname = "MessageProtos";
+ 
+message Message {
+  required string objectId = 1;
+  required string content = 2;
+  required uint64 google_msg_id = 3;
+  required uint64 google_trd_id = 4;
+  required uint64 message_id = 5;
+  required string recipients = 6;
+  required string recipients_id = 7;
+  required string sender_email = 8;
+  required string sent_date = 9;
+  required string subject = 10;
 
-message Person {
-  required string name = 1;
-  required int32 id = 2;
-  optional string email = 3;
-
-  enum PhoneType {
-    MOBILE = 0;
-    HOME = 1;
-    WORK = 2;
+  message Attachment {
+    required string application = 1;
+    optional string link = 2;
+    optional string name = 3;
   }
-
-  message PhoneNumber {
-    required string number = 1;
-    optional PhoneType type = 2 [default = HOME];
-  }
-
-  repeated PhoneNumber phone = 4;
-}
-
-message AddressBook {
-  repeated Person person = 1;
+  
+  repeated Attachment attachment = 11;
 }
