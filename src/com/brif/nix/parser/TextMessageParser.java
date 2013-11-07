@@ -75,7 +75,7 @@ public class TextMessageParser implements MimePraser {
 	}
 
 	protected static boolean removeGmail(Document doc) {
-		final Elements select = doc.select(".gmail_extra");
+		final Elements select = doc.select(".gmail_quote");
 		if (select.size() > 0) {
 			select.remove();
 			return true;
