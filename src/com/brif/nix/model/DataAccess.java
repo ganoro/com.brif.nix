@@ -142,6 +142,7 @@ public class DataAccess {
 		// add the seen tag to the notification (not to table) and post
 		// notification
 		data.put("unseen", !mp.isSeen());
+		data.put("sent-by-brif", mp.sentByBrif());
 		notifyMessageAdded(currentUser, data);
 	}
 

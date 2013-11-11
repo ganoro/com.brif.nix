@@ -414,4 +414,15 @@ public class MessageParser {
 		return string;
 	}
 
+	public boolean sentByBrif() {
+		String header = null;
+		try {
+			header = this.message.getHeader("X-sent-by", null);
+		} catch (MessagingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return "brif".equals(header);
+	}
+
 }
