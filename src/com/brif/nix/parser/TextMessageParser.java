@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.util.List;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,7 +54,7 @@ public class TextMessageParser implements MimePraser {
 						return "";
 					}
 				} else {
-					return "<pre>" + text + "</pre>";
+					return removeTail(text);
 				}
 			} catch (MessagingException e) {
 				// TODO Auto-generated catch block
@@ -64,6 +65,22 @@ public class TextMessageParser implements MimePraser {
 			}
 		}
 		return "";
+	}
+
+	private String removeTail(String text) {
+		final Scanner scanner = new Scanner(text);
+		StringBuilder sb = new StringBuilder();
+
+		String nextLine = scanner.nextLine();
+		do {
+			if (!nextLine.startsWith(">")) {
+				sb.append(nextLine);
+				sb.append("<br/>");
+			}
+			nextLine = scanner.nextLine();
+		} while (scanner.hasNextLine());
+
+		return sb.toString();
 	}
 
 	@Override
