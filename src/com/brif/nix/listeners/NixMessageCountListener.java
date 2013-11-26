@@ -49,8 +49,11 @@ public class NixMessageCountListener implements MessageCountListener {
 				System.out.println(getTime() + "adding message ("
 						+ messageNumber + ")");
 				MessageParser mp = new MessageParser(message);
-				dataAccess.addMessage(currentUser, mp);
-
+				
+				if (!mp.isPromotional()) {
+					dataAccess.addMessage(currentUser, mp);	
+				}
+				
 				System.out.println(getTime() + "message added ("
 						+ messageNumber + ")");
 

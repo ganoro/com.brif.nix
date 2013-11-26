@@ -31,6 +31,8 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import com.sun.mail.gimap.GmailFolder;
 import com.sun.mail.gimap.GmailFolder.FetchProfileItem;
@@ -44,6 +46,9 @@ public class MessageParser {
 	private String allRecipients;
 	private String allRecipientsNames;
 	private String originalRecipients;
+
+	private String content = null;
+	private String subject = null;
 
 	private static FetchProfile fp = new FetchProfile();
 	private static Message[] container = new Message[1];
@@ -121,9 +126,12 @@ public class MessageParser {
 	}
 
 	public String getSubject() throws MessagingException {
+		if (this.subject != null) {
+			return this.subject;
+		}
 		final String header = this.message.getHeader("Subject", null);
 		final String c = getCharsetByHeader(header);
-		final String subject = convertToUTF(message.getSubject(), c);
+		this.subject = convertToUTF(message.getSubject(), c);
 		return subject == null ? "" : subject;
 	}
 
@@ -237,13 +245,17 @@ public class MessageParser {
 	}
 
 	public String getContent() throws IOException, MessagingException {
+		if (this.content != null) {
+			return this.content;
+		}
 		final MimePraser parser = MimeParserFactory.getParser(message);
 		String result = parser.getContent();
 		if (result.length() == 0) {
 			return getSubject() == null ? "" : getSubject();
 		}
 		result = result.substring(0, Math.min(result.length(), 70000));
-		return convertToUTF(result, null);
+		this.content = convertToUTF(result, null);
+		return content;
 	}
 
 	public JSONArray getAttachmentsAsJSON() {
@@ -423,6 +435,17 @@ public class MessageParser {
 			e.printStackTrace();
 		}
 		return "brif".equals(header);
+	}
+
+	public boolean isPromotional()  {
+		Document doc = null;
+		try {
+			doc = Jsoup.parse(getContent());
+		} catch (Exception e) {
+			return true;
+		}
+		
+		return doc.select("img").size() > 1;
 	}
 
 }
