@@ -89,11 +89,14 @@ public class MimeHelper {
 		String disposition = part.getDisposition();
 		final String contentType = part.getContentType();
 		final String dispositionType = getHeaderParameter(contentType, null);
-		
-		if (disposition == null && dispositionType != null && !dispositionType.toLowerCase().startsWith("image")) {
-			return null;
+
+		if (dispositionType != null) {
+			final String type = dispositionType.toLowerCase();
+			if (disposition == null && !type.startsWith("image")) {
+				return null;
+			}
 		}
-		
+
 		String dispositionFilename = MimeHelper.getFilename(part);
 
 		/*
@@ -104,8 +107,8 @@ public class MimeHelper {
 				|| "inline".equalsIgnoreCase(disposition)
 				|| (dispositionFilename != null);
 
-		return attachment ? new MessageAttachment(
-				dispositionType, dispositionFilename) : null;
+		return attachment ? new MessageAttachment(dispositionType,
+				dispositionFilename) : null;
 	}
 
 	private static String getFilename(Part part) throws MessagingException {
