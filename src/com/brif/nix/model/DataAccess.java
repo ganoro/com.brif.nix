@@ -10,9 +10,7 @@ import java.util.Map;
 import java.util.TimeZone;
 
 import javax.mail.MessagingException;
-import javax.mail.search.SentDateTerm;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.http.client.ClientProtocolException;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,8 +24,6 @@ import com.brif.nix.parse.ParseException;
 import com.brif.nix.parse.ParseObject;
 import com.brif.nix.parse.ParseQuery;
 import com.brif.nix.parser.MessageParser;
-import com.brif.nix.protobuf.MessageBuilder;
-import com.brif.nix.protobuf.generated.MessageProtos.Message;
 
 /**
  * Data access is only allowed here, decoupling data access to single point
@@ -198,26 +194,8 @@ public class DataAccess {
 		if (attachments != null) {
 			m.put("attachments", attachments);
 		}
-		
-		return m;
-	}
 
-	/**
-	 * @deprecated don't use me, no encoding w/ b64 for now...  
-	 */
-	protected void messageEncoder(User currentUser, Map<String, Object> m,
-			final long messageId, final long googleThreadId,
-			final long googleMessageId, final String[] sentBy,
-			final Date sentDate, final String subject,
-			final String recipientsNames, final String recipientsId,
-			final String content) throws IOException {
-		final Message message = MessageBuilder.buildMessage(currentUser.objectId, content,
-				googleMessageId, googleThreadId, messageId, recipientsId,
-				recipientsNames, sentBy[0], sentDate.toString(), subject);
-		
-		final byte[] messageAsBytes = MessageBuilder.getMessageAsBytes(message);
-		final byte[] encodeBase64 = Base64.encodeBase64(messageAsBytes);
-		m.put("base64", new String(encodeBase64));
+		return m;
 	}
 
 	private void notifyMessageAdded(User currentUser, Map<String, Object> data) {

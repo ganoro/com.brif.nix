@@ -84,25 +84,28 @@ public class MimeHelper {
 	}
 
 	public static final MessageAttachment getAttachment(Part part)
-			throws MessagingException {
+			throws MessagingException, IOException {
+
 		String disposition = part.getDisposition();
-		if (disposition == null || "inline".equalsIgnoreCase(disposition)) {
-			return null;
-		}
 		final String contentType = part.getContentType();
 		final String dispositionType = getHeaderParameter(contentType, null);
+		
+		if (disposition == null && dispositionType != null && !dispositionType.toLowerCase().startsWith("image")) {
+			return null;
+		}
+		
 		String dispositionFilename = MimeHelper.getFilename(part);
 
 		/*
 		 * A best guess that this part is intended to be an attachment and not
 		 * inline.
 		 */
-		boolean attachment = ("attachment".equalsIgnoreCase(dispositionType))
+		boolean attachment = ("attachment".equalsIgnoreCase(disposition))
+				|| "inline".equalsIgnoreCase(disposition)
 				|| (dispositionFilename != null);
 
-		return attachment ? new MessageAttachment(dispositionType,
-				dispositionFilename, "link_here") : null;
-
+		return attachment ? new MessageAttachment(
+				dispositionType, dispositionFilename) : null;
 	}
 
 	private static String getFilename(Part part) throws MessagingException {
@@ -125,7 +128,7 @@ public class MimeHelper {
 			e.printStackTrace();
 			dispositionFilename = "unknown_filename";
 		}
-		
+
 		return dispositionFilename;
 	}
 

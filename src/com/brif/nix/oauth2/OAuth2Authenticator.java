@@ -7,6 +7,8 @@ package com.brif.nix.oauth2;
 import java.io.IOException;
 import java.security.Provider;
 import java.security.Security;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import javax.mail.AuthenticationFailedException;
@@ -17,6 +19,7 @@ import javax.mail.Session;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
+import com.brif.nix.gdrive.DriveManager;
 import com.brif.nix.listeners.NixMessageCountListener;
 import com.brif.nix.model.DataAccess;
 import com.brif.nix.model.User;
@@ -24,9 +27,16 @@ import com.brif.nix.notifications.SapiNotificationsHandler;
 import com.brif.nix.parser.MessageParser;
 import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.auth.oauth2.TokenResponseException;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleRefreshTokenRequest;
+import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.FileList;
+import com.google.api.services.drive.model.ParentReference;
 import com.sun.mail.gimap.GmailFolder;
 import com.sun.mail.gimap.GmailSSLStore;
 import com.sun.mail.iap.ProtocolException;
@@ -83,7 +93,9 @@ public class OAuth2Authenticator {
 				return;
 			}
 
-			String originalAccessToken = currentUser.access_token;
+			// init google drive
+			DriveManager drive = DriveManager.getSingelton();
+			drive.setUser(currentUser);
 
 			// IMAP connection
 			GmailSSLStore imapStore = connect(currentUser);
@@ -94,6 +106,7 @@ public class OAuth2Authenticator {
 			}
 
 			// update with latest access_token
+			String originalAccessToken = currentUser.access_token;
 			if (currentUser.access_token != originalAccessToken) {
 				dataAccess.updateUserToken(currentUser);
 			}
@@ -131,6 +144,8 @@ public class OAuth2Authenticator {
 
 		}
 	}
+
+
 
 	private static void logStatus() {
 		/* This will return Long.MAX_VALUE if there is no preset limit */
@@ -233,10 +248,10 @@ public class OAuth2Authenticator {
 			imapStore = connectToImap("imap.gmail.com", 993, currentUser.email,
 					currentUser.access_token, debug);
 		} catch (AuthenticationFailedException e) {
-			
+
 			// try again... first invalidate access token
 			invalidateAccessToken(currentUser);
-			
+
 			try {
 				imapStore = connectToImap("imap.gmail.com", 993,
 						currentUser.email, currentUser.access_token, debug);
@@ -250,14 +265,14 @@ public class OAuth2Authenticator {
 
 	protected static void invalidateAccessToken(User currentUser)
 			throws IOException {
-		
+
 		OAuth2Configuration conf = OAuth2Configuration
 				.getConfiguration(currentUser.origin);
 
 		final String access_token = refreshAccessToken(
 				currentUser.refresh_token, conf.get("client_id"),
 				conf.get("client_secret"));
-		
+
 		currentUser.access_token = access_token;
 	}
 

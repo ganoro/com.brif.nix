@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.mail.Address;
 import javax.mail.BodyPart;
@@ -66,23 +67,22 @@ public class MessageParser {
 	}
 
 	public static class MessageAttachment {
-		String app;
+		String type;
 		String name;
-		String link;
+		String key;
 
 		public MessageAttachment(String dispositionType,
-				String dispositionFilename, String link) {
-			this.app = dispositionType;
+				String dispositionFilename) {
+			this.type = dispositionType;
 			this.name = dispositionFilename;
-			this.link = link;
 		}
 
 		public JSONObject toJSONObject() {
 			JSONObject jo = new JSONObject();
 			try {
-				jo.put("app", app);
+				jo.put("type", type);
 				jo.put("name", name);
-				jo.put("link", link);
+				jo.put("key", key);
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
