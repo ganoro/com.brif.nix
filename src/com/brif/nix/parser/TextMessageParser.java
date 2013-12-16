@@ -106,7 +106,10 @@ public class TextMessageParser implements IMimePraser {
 	protected static boolean removeIOS(Document doc) {
 		final Elements select = doc.select("blockquote");
 		if (select.size() > 0) {
-			select.get(0).previousSibling().remove();
+			final Node previousSibling = select.get(0).previousSibling();
+			if (previousSibling != null) {
+				previousSibling.remove();	
+			}
 			select.get(0).remove();
 			return true;
 		}
