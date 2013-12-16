@@ -31,8 +31,6 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 
 import com.sun.mail.gimap.GmailFolder;
 import com.sun.mail.gimap.GmailFolder.FetchProfileItem;

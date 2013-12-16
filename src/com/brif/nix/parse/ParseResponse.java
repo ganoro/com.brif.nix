@@ -2,8 +2,6 @@ package com.brif.nix.parse;
 
 import java.io.IOException;
 
-import javax.net.ssl.SSLEngineResult.Status;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
