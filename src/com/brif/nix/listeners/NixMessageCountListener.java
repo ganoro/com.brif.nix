@@ -13,7 +13,6 @@ import javax.mail.event.MessageCountListener;
 import com.brif.nix.model.DataAccess;
 import com.brif.nix.model.User;
 import com.brif.nix.parser.MessageParser;
-import com.sun.mail.gimap.GmailMessage;
 
 public class NixMessageCountListener implements MessageCountListener {
 
@@ -42,18 +41,16 @@ public class NixMessageCountListener implements MessageCountListener {
 		Message[] messages = arg0.getMessages();
 		for (Message message : messages) {
 			try {
-				if (isDraft(message)) {
-					break;
-				}
 				final int messageNumber = message.getMessageNumber();
+
 				System.out.println(getTime() + "adding message ("
 						+ messageNumber + ")");
+
 				MessageParser mp = new MessageParser(message);
-				
-				if (!mp.isPromotional()) {
-					dataAccess.addMessage(currentUser, mp);	
+				if (!mp.isDraft()) {
+					dataAccess.addMessage(currentUser, mp);
 				}
-				
+
 				System.out.println(getTime() + "message added ("
 						+ messageNumber + ")");
 
@@ -65,12 +62,6 @@ public class NixMessageCountListener implements MessageCountListener {
 				e.printStackTrace();
 			}
 		}
-	}
-
-	private boolean isDraft(Message message) throws MessagingException {
-		GmailMessage gm = (GmailMessage) message;
-		final String[] labels = gm.getLabels();
-		return labels.length > 0 && "\\Draft".equals(labels[0]);
 	}
 
 	public static String getTime() {

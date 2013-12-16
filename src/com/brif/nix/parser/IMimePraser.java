@@ -2,7 +2,7 @@ package com.brif.nix.parser;
 
 import java.util.List;
 
-public interface MimePraser {
+public interface IMimePraser {
 
 	public String getContent();
 	

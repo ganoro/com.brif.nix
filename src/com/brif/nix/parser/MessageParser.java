@@ -13,7 +13,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 import javax.mail.Address;
 import javax.mail.BodyPart;
@@ -248,7 +247,7 @@ public class MessageParser {
 		if (this.content != null) {
 			return this.content;
 		}
-		final MimePraser parser = MimeParserFactory.getParser(message);
+		final IMimePraser parser = MimeParserFactory.getParser(message);
 		String result = parser.getContent();
 		if (result.length() == 0) {
 			return getSubject() == null ? "" : getSubject();
@@ -271,7 +270,7 @@ public class MessageParser {
 	}
 
 	protected List<MessageAttachment> getAttachments() {
-		final MimePraser parser = MimeParserFactory.getParser(message);
+		final IMimePraser parser = MimeParserFactory.getParser(message);
 		List<MessageAttachment> atts = new ArrayList<MessageAttachment>();
 		parser.collectAttachments(atts);
 		if (atts.size() == 0) {
@@ -436,16 +435,4 @@ public class MessageParser {
 		}
 		return "brif".equals(header);
 	}
-
-	public boolean isPromotional()  {
-		Document doc = null;
-		try {
-			doc = Jsoup.parse(getContent());
-		} catch (Exception e) {
-			return true;
-		}
-		
-		return doc.select("img").size() > 1;
-	}
-
 }

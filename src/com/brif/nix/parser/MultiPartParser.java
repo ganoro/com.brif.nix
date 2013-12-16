@@ -11,10 +11,8 @@ import javax.mail.internet.MimeMultipart;
 
 import com.brif.nix.gdrive.DriveManager;
 import com.brif.nix.parser.MessageParser.MessageAttachment;
-import com.google.api.client.http.InputStreamContent;
-import com.google.api.services.drive.model.File;
 
-public abstract class MultiPartParser implements MimePraser {
+public abstract class MultiPartParser implements IMimePraser {
 
 	protected MimeMultipart body;
 
@@ -28,7 +26,7 @@ public abstract class MultiPartParser implements MimePraser {
 			for (int i = 0; i < body.getCount(); i++) {
 				Part bp = body.getBodyPart(i);
 				if (bp.isMimeType("multipart/*")) {
-					final MimePraser parser = MimeParserFactory.getParser(bp);
+					final IMimePraser parser = MimeParserFactory.getParser(bp);
 					parser.collectAttachments(atts);
 				} else {
 					final MessageAttachment attachment = MimeHelper

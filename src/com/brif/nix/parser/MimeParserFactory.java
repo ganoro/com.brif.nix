@@ -11,9 +11,9 @@ import com.brif.nix.parser.MessageParser.MessageAttachment;
 
 public class MimeParserFactory {
 
-	public static MimePraser theEmptyParser;
+	public static IMimePraser theEmptyParser;
 	static {
-		theEmptyParser = new MimePraser() {
+		theEmptyParser = new IMimePraser() {
 			@Override
 			public String getContent() {
 				return "";
@@ -24,8 +24,8 @@ public class MimeParserFactory {
 		};
 	}
 
-	public static MimePraser getParser(Part message) {
-		MimePraser result = null;
+	public static IMimePraser getParser(Part message) {
+		IMimePraser result = null;
 		try {
 
 			final Object content = message.getContent();
@@ -41,8 +41,6 @@ public class MimeParserFactory {
 				result = theEmptyParser;
 			}
 			
-		
-
 		} catch (MessagingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

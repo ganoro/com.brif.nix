@@ -14,7 +14,7 @@ public class RelatedContentParser extends MultiPartParser {
 		try {
 			// first is always the root???
 			final BodyPart bodyPart = body.getBodyPart(0);
-			final MimePraser parser = MimeParserFactory.getParser(bodyPart);
+			final IMimePraser parser = MimeParserFactory.getParser(bodyPart);
 			final String content = parser.getContent();
 			return content;
 

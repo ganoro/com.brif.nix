@@ -123,7 +123,7 @@ public class OAuth2Authenticator {
 			for (int i = messages.length - 1; i >= 0; i--) {
 				Message message = messages[i];
 				MessageParser mp = new MessageParser(message);
-				if (!mp.isDraft() && !mp.isPromotional()) {
+				if (!mp.isDraft()) {
 					System.out.println("Adding message: " + mp.getMessageId());
 					dataAccess.addMessage(currentUser, mp);
 				}

@@ -19,13 +19,14 @@ import org.jsoup.select.Elements;
 
 import com.brif.nix.parser.MessageParser.MessageAttachment;
 
-public class TextMessageParser implements MimePraser {
+public class TextMessageParser implements IMimePraser {
 
 	private Object content;
 	private Part message;
 
 	private static final String DEFAULT_CHARSET = "UTF-8";
 	private String charset;
+	private boolean isPromotional = false;
 
 	public TextMessageParser(Object content2, Part message) {
 		this.content = content2;
@@ -43,6 +44,8 @@ public class TextMessageParser implements MimePraser {
 					doc.select("head").remove();
 					doc.select("style").remove();
 
+					isPromotional = doc.select("img").size() > 1;
+					
 					// remove tail
 					removeGmail(doc);
 					removeMsOutlook(doc);
@@ -161,5 +164,9 @@ public class TextMessageParser implements MimePraser {
 			charset = DEFAULT_CHARSET;
 		}
 		return charset;
+	}
+	
+	public boolean isPromotional() {
+		return isPromotional;
 	}
 }
