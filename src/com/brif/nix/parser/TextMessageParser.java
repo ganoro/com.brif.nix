@@ -74,14 +74,14 @@ public class TextMessageParser implements IMimePraser {
 		final Scanner scanner = new Scanner(text);
 		StringBuilder sb = new StringBuilder();
 
-		do {
+		while (scanner.hasNextLine()) {
 			String nextLine = scanner.nextLine();
 
-			if (!nextLine.startsWith(">")) {
+			if (nextLine != null && !nextLine.startsWith(">")) {
 				sb.append(nextLine);
 				sb.append("<br/>");
 			}
-		} while (scanner != null && scanner.hasNextLine());
+		} 
 
 		return sb.toString();
 	}
