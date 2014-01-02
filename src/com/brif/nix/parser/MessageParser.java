@@ -32,6 +32,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.brif.nix.model.User;
 import com.sun.mail.gimap.GmailFolder;
 import com.sun.mail.gimap.GmailFolder.FetchProfileItem;
 import com.sun.mail.gimap.GmailMessage;
@@ -50,6 +51,8 @@ public class MessageParser {
 
 	private static FetchProfile fp = new FetchProfile();
 	private static Message[] container = new Message[1];
+
+	private User user;
 
 	static {
 		fp.add(FetchProfileItem.CONTENT_INFO);
@@ -88,7 +91,8 @@ public class MessageParser {
 		}
 	}
 
-	public MessageParser(Message message) {
+	public MessageParser(Message message, User currentUser) {
+		this.user = currentUser;
 		if (message == null || !(message instanceof GmailMessage)) {
 			throw new IllegalArgumentException("empty message in "
 					+ getClass().getCanonicalName());
@@ -193,7 +197,7 @@ public class MessageParser {
 	public String getOriginalRecipients() throws MessagingException {
 		if (this.originalRecipients == null) {
 			final String[] ref = message.getHeader("References");
-			if (ref == null) {
+			if (ref == null || ref[0] == null || ref[0].indexOf(">") < 1) {
 				return "";
 			}
 
@@ -224,15 +228,11 @@ public class MessageParser {
 		return null;
 	}
 
-	public static <T> T[] concat(T[] first, T[] second) {
-		if (first == null) {
-			return second;
-		}
-		if (second == null) {
-			return first;
-		}
-		T[] result = Arrays.copyOf(first, first.length + second.length);
+	public static <T> T[] concat(T zero, T[] first, T[] second) {
+		// assumes no nullity!!! 
+		T[] result = Arrays.copyOf(first, first.length + second.length + 1);
 		System.arraycopy(second, 0, result, first.length, second.length);
+		result[result.length - 1] = zero;
 		return result;
 	}
 
@@ -279,7 +279,12 @@ public class MessageParser {
 
 	private String[] resolveRecipientsString(Address[] allRecipients,
 			Address[] from) {
-		Address[] concat = concat(allRecipients, from);
+		Address[] concat = null;
+		try {
+			concat = concat(new InternetAddress(user.email, user.email), allRecipients, from);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
 		Arrays.sort(concat, new Comparator<Address>() {
 			@Override
 			public int compare(Address o1, Address o2) {
