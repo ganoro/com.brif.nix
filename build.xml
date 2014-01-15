@@ -12,6 +12,7 @@
     <path id="com.brif.nix.classpath">
         <pathelement location="bin"/>
     	<pathelement location="lib/gimap-1.5.0.jar"/>
+    	<pathelement location="lib/jcharset.jar"/>
         <pathelement location="lib/commons-logging-1.1.1.jar"/>
         <pathelement location="lib/commons-codec-1.8.jar"/>
         <pathelement location="libs/commons-logging-1.1.1.jar"/>
