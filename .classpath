@@ -46,5 +46,6 @@
 	<classpathentry kind="lib" path="lib/javax.mail.jar"/>
 	<classpathentry kind="lib" path="lib/json.jar"/>
 	<classpathentry kind="lib" path="lib/jsoup-1.7.2.jar"/>
+	<classpathentry kind="lib" path="lib/jcharset.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
