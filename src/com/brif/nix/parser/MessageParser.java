@@ -54,6 +54,8 @@ public class MessageParser {
 
 	private User user;
 
+	private static final Address[] emptyAddress = new Address[0];;
+
 	static {
 		fp.add(FetchProfileItem.CONTENT_INFO);
 		fp.add(FetchProfileItem.ENVELOPE);
@@ -228,9 +230,16 @@ public class MessageParser {
 		return null;
 	}
 
-	public static <T> T[] concat(T zero, T[] first, T[] second) {
-		// assumes no nullity!!! 
-		T[] result = Arrays.copyOf(first, first.length + second.length + 1);
+	public static Address[] concat(Address zero, Address[] first,
+			Address[] second) {
+		if (first == null) {
+			first = emptyAddress;
+		}
+		if (second == null) {
+			second = emptyAddress;
+		}
+		Address[] result = Arrays.copyOf(first, first.length + second.length
+				+ 1);
 		System.arraycopy(second, 0, result, first.length, second.length);
 		result[result.length - 1] = zero;
 		return result;
@@ -281,7 +290,8 @@ public class MessageParser {
 			Address[] from) {
 		Address[] concat = null;
 		try {
-			concat = concat(new InternetAddress(user.email, user.email), allRecipients, from);
+			concat = concat(new InternetAddress(user.email, user.email),
+					allRecipients, from);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
