@@ -336,6 +336,8 @@ public class OAuth2Authenticator {
 				} catch (InterruptedException e) {
 					// Ignore, just aborting the thread...
 				} catch (MessagingException e) {
+					e.printStackTrace();
+					System.out.println(e.getMessage());
 					// Shouldn't really happen...
 					System.out
 							.println("Unexpected exception while keeping alive the IDLE connection");
