@@ -11,6 +11,7 @@ import java.util.Properties;
 
 import javax.mail.AuthenticationFailedException;
 import javax.mail.Folder;
+import javax.mail.FolderClosedException;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -335,9 +336,18 @@ public class OAuth2Authenticator {
 					});
 				} catch (InterruptedException e) {
 					// Ignore, just aborting the thread...
+				} catch (FolderClosedException ex) {
+                    ex.printStackTrace();
+                    // ConnectPop3(Username, Password);
+                    if (!folder.isOpen()) {
+                        try {
+							folder.open(Folder.READ_ONLY);
+						} catch (MessagingException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+                    }
 				} catch (MessagingException e) {
-					e.printStackTrace();
-					System.out.println(e.getMessage());
 					// Shouldn't really happen...
 					System.out
 							.println("Unexpected exception while keeping alive the IDLE connection");
