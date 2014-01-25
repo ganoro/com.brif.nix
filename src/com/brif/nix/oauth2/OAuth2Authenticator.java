@@ -128,7 +128,7 @@ public class OAuth2Authenticator {
 					currentUser, dataAccess));
 
 			try {
-				startKeepAliveListener((IMAPFolder) inbox);
+				startKeepAliveListener((IMAPFolder) inbox, currentUser);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -136,8 +136,6 @@ public class OAuth2Authenticator {
 
 		}
 	}
-
-
 
 	private static void logStatus() {
 		/* This will return Long.MAX_VALUE if there is no preset limit */
@@ -268,10 +266,10 @@ public class OAuth2Authenticator {
 		currentUser.access_token = access_token;
 	}
 
-	public static void startKeepAliveListener(IMAPFolder imapFolder)
-			throws MessagingException {
+	public static void startKeepAliveListener(IMAPFolder imapFolder,
+			User currentUser) throws MessagingException {
 		// We need to create a new thread to keep alive the connection
-		Thread t = new Thread(new KeepAliveRunnable(imapFolder),
+		Thread t = new Thread(new KeepAliveRunnable(imapFolder, currentUser),
 				"IdleConnectionKeepAlive");
 
 		t.start();
@@ -314,8 +312,11 @@ public class OAuth2Authenticator {
 
 		private IMAPFolder folder;
 
-		public KeepAliveRunnable(IMAPFolder folder) {
+		private User currentUser;
+
+		public KeepAliveRunnable(IMAPFolder folder, User currentUser) {
 			this.folder = folder;
+			this.currentUser = currentUser;
 		}
 
 		@Override
@@ -337,16 +338,17 @@ public class OAuth2Authenticator {
 				} catch (InterruptedException e) {
 					// Ignore, just aborting the thread...
 				} catch (FolderClosedException ex) {
-                    ex.printStackTrace();
-                    // ConnectPop3(Username, Password);
-                    if (!folder.isOpen()) {
-                        try {
+					ex.printStackTrace();
+					try {
+						connect(currentUser);
+						if (!folder.isOpen()) {
 							folder.open(Folder.READ_ONLY);
-						} catch (MessagingException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
 						}
-                    }
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
 				} catch (MessagingException e) {
 					// Shouldn't really happen...
 					System.out
