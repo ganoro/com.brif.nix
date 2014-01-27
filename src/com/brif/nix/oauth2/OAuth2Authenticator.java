@@ -122,7 +122,7 @@ public class OAuth2Authenticator {
 			}
 
 			dataAccess = new DataAccess(new SapiNotificationsHandler(
-					"http://api.brif.us"));
+					"http://api.brif.us:443"));
 			// https://bugzilla.mozilla.org/show_bug.cgi?id=518581
 			inbox.addMessageCountListener(new NixMessageCountListener(
 					currentUser, dataAccess));
