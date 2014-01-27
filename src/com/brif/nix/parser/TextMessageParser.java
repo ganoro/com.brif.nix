@@ -119,9 +119,6 @@ public class TextMessageParser implements IMimePraser {
 	protected static boolean removeMsOutlook(Document doc) {
 		final Elements select = doc.select(".MsoNormal");
 		if (select.size() > 0) {
-			final Element appendElement = doc.prependElement("style");
-			appendElement
-					.html("p.MsoNormal, li.MsoNormal, div.MsoNormal {margin:0cm; margin-bottom:.0001pt; font-size:12.0pt; font-family:\"Times New Roman\",\"serif\";}");
 			Element e = select.get(0).nextElementSibling();
 			while (e != null && e.hasClass("MsoNormal")) {
 				e = e.nextElementSibling();
