@@ -70,6 +70,9 @@ public class TextMessageParser implements IMimePraser {
 		return "";
 	}
 
+	private static final String r = "http(s)?://([\\w+?\\.\\w+])+([a-zA-Z0-9\\~\\!\\@\\#\\$\\%\\^\\&amp;\\*\\(\\)_\\-\\=\\+\\\\\\/\\?\\.\\:\\;\\'\\,]*)?";
+	private final static Pattern pattern = Pattern.compile(r, Pattern.DOTALL | Pattern.UNIX_LINES | Pattern.CASE_INSENSITIVE);
+
 	private String removeTail(String text) {
 		final Scanner scanner = new Scanner(text);
 		StringBuilder sb = new StringBuilder();
@@ -78,7 +81,9 @@ public class TextMessageParser implements IMimePraser {
 			String nextLine = scanner.nextLine();
 
 			if (nextLine != null && !nextLine.startsWith(">")) {
-				sb.append(nextLine);
+				Matcher matcher = pattern.matcher(nextLine);
+				// nextLine = matcher.replaceAll("<a href=\"$0\">$0</a>"); // group 0 is the whole expression
+				sb.append(matcher.replaceAll("<a href=\"$0\">link</a>"));
 				sb.append("<br/>");
 			}
 		} 
