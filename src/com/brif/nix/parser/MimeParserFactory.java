@@ -27,8 +27,13 @@ public class MimeParserFactory {
 	public static IMimePraser getParser(Part message) {
 		IMimePraser result = null;
 		try {
-
-			final Object content = message.getContent();
+			Object content = null;
+			try {
+				content = message.getContent();
+			} catch (IOException e) {
+				content = "<unknown encoding>";
+			}
+			
 			if (message.isMimeType("text/*")) {
 				result = new TextMessageParser(content, message);
 			} else if (message.isMimeType("multipart/alternative")) {
