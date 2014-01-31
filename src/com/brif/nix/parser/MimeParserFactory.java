@@ -18,6 +18,7 @@ public class MimeParserFactory {
 			public String getContent() {
 				return "";
 			}
+
 			@Override
 			public void collectAttachments(List<MessageAttachment> atts) {
 			}
@@ -33,7 +34,7 @@ public class MimeParserFactory {
 			} catch (IOException e) {
 				content = "<unknown encoding>";
 			}
-			
+
 			if (message.isMimeType("text/*")) {
 				result = new TextMessageParser(content, message);
 			} else if (message.isMimeType("multipart/alternative")) {
@@ -45,11 +46,8 @@ public class MimeParserFactory {
 			} else {
 				result = theEmptyParser;
 			}
-			
+
 		} catch (MessagingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
