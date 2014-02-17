@@ -103,8 +103,8 @@ public class OAuth2Authenticator {
 				dataAccess.updateUserToken(currentUser);
 			}
 
-			GmailFolder inbox = (GmailFolder) imapStore.getFolder("[Gmail]")
-					.getFolder("All Mail");
+			final Folder[] list = imapStore.getFolder("[Gmail]").list();
+			GmailFolder inbox = getAllMailFolder(list); // each locale has its own \All directory
 			inbox.open(Folder.READ_ONLY);
 
 			// TODO map reduce ?
@@ -135,6 +135,24 @@ public class OAuth2Authenticator {
 			}
 
 		}
+	}
+
+	private static GmailFolder getAllMailFolder(Folder[] list) {
+		for (Folder folder : list) {
+			GmailFolder f = (GmailFolder) folder;
+			try {
+				final String[] attributes = f.getAttributes();
+				for (String string : attributes) {
+					if ("\\All".equals(string)) {
+						return f;
+					}
+				}
+			} catch (MessagingException e) {
+				e.printStackTrace();
+			}
+			
+		}
+		return null;
 	}
 
 	private static void logStatus() {

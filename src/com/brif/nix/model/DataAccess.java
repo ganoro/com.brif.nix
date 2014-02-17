@@ -68,7 +68,7 @@ public class DataAccess {
 		return new User(email, parseObject.getString("access_token"),
 				parseObject.getString("refresh_token"),
 				parseObject.getString("origin"), next_uid,
-				parseObject.getObjectId());
+				parseObject.getObjectId(), parseObject.getString("locale"));
 	}
 
 	private Long findLatestMessageId(String objectId) {
@@ -111,6 +111,9 @@ public class DataAccess {
 	}
 
 	private JSONObject getISO(Date date) throws MessagingException {
+		if (date == null) {
+			date = new Date();
+		}
 		// YYYY-MM-DDTHH:MM:SS.MMMZ
 		TimeZone tz = TimeZone.getTimeZone("UTC");
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
