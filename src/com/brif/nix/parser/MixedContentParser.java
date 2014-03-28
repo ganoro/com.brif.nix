@@ -15,7 +15,8 @@ public class MixedContentParser extends MultiPartParser {
 			StringBuilder sb = new StringBuilder();
 			for (int i = 0; i < body.getCount(); i++) {
 				final BodyPart bodyPart = body.getBodyPart(i);
-				final IMimePraser parser = MimeParserFactory.getParser(bodyPart);
+				final IMimePraser parser = MimeParserFactory
+						.getParser(bodyPart);
 				final String content = parser.getContent();
 				sb.append(content);
 			}
@@ -25,5 +26,10 @@ public class MixedContentParser extends MultiPartParser {
 			e.printStackTrace();
 		}
 		return "";
+	}
+
+	@Override
+	public String getMetadata(String key) {
+		return null;
 	}
 }

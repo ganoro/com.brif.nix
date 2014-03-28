@@ -21,12 +21,13 @@ import com.brif.nix.parser.MessageParser.MessageAttachment;
 
 public class TextMessageParser implements IMimePraser {
 
+	public static final String UNSUBSCRIBE = "unsubscribe";
 	private Object content;
 	private Part message;
 
 	private static final String DEFAULT_CHARSET = "UTF-8";
 	private String charset;
-	private boolean isPromotional = false;
+	private String unsubscribe = null;
 
 	public TextMessageParser(Object content2, Part message) {
 		this.content = content2;
@@ -44,8 +45,11 @@ public class TextMessageParser implements IMimePraser {
 					doc.select("head").remove();
 					doc.select("style").remove();
 
-					isPromotional = doc.select("img").size() > 1;
-					
+					final Elements href = doc.select("a");
+					if (href != null && !href.isEmpty()) {
+						unsubscribe = getUnsubscribeLinks(href);
+					}
+
 					// remove tail
 					removeGmail(doc);
 					removeMsOutlook(doc);
@@ -70,8 +74,21 @@ public class TextMessageParser implements IMimePraser {
 		return "";
 	}
 
+	private String getUnsubscribeLinks(Elements href) {
+		for (Element a : href) {
+			final String text = a.text();
+			if (text != null && text.length() > 10) {
+				if (text.toLowerCase().contains(UNSUBSCRIBE)) {
+					return a.attr("href");
+				}
+			}
+		}
+		return null;
+	}
+
 	private static final String r = "http(s)?://([\\w+?\\.\\w+])+([a-zA-Z0-9\\~\\!\\@\\#\\$\\%\\^\\&amp;\\*\\(\\)_\\-\\=\\+\\\\\\/\\?\\.\\:\\;\\'\\,]*)?";
-	private final static Pattern pattern = Pattern.compile(r, Pattern.DOTALL | Pattern.UNIX_LINES | Pattern.CASE_INSENSITIVE);
+	private final static Pattern pattern = Pattern.compile(r, Pattern.DOTALL
+			| Pattern.UNIX_LINES | Pattern.CASE_INSENSITIVE);
 
 	private String removeTail(String text) {
 		final Scanner scanner = new Scanner(text);
@@ -82,11 +99,12 @@ public class TextMessageParser implements IMimePraser {
 
 			if (nextLine != null && !nextLine.startsWith(">")) {
 				Matcher matcher = pattern.matcher(nextLine);
-				// nextLine = matcher.replaceAll("<a href=\"$0\">$0</a>"); // group 0 is the whole expression
+				// nextLine = matcher.replaceAll("<a href=\"$0\">$0</a>"); //
+				// group 0 is the whole expression
 				sb.append(matcher.replaceAll("<a href=\"$0\">link</a>"));
 				sb.append("<br/>");
 			}
-		} 
+		}
 
 		return sb.toString();
 	}
@@ -113,7 +131,7 @@ public class TextMessageParser implements IMimePraser {
 		if (select.size() > 0) {
 			final Node previousSibling = select.get(0).previousSibling();
 			if (previousSibling != null) {
-				previousSibling.remove();	
+				previousSibling.remove();
 			}
 			select.get(0).remove();
 			return true;
@@ -170,8 +188,9 @@ public class TextMessageParser implements IMimePraser {
 		}
 		return charset;
 	}
-	
-	public boolean isPromotional() {
-		return isPromotional;
+
+	@Override
+	public String getMetadata(String key) {
+		return key == UNSUBSCRIBE ? this.unsubscribe : null;
 	}
 }

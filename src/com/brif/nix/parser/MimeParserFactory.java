@@ -22,6 +22,11 @@ public class MimeParserFactory {
 			@Override
 			public void collectAttachments(List<MessageAttachment> atts) {
 			}
+
+			@Override
+			public String getMetadata(String key) {
+				return null;
+			}
 		};
 	}
 

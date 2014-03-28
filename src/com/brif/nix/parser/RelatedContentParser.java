@@ -26,4 +26,9 @@ public class RelatedContentParser extends MultiPartParser {
 		return "";
 	}
 
+	@Override
+	public String getMetadata(String key) {
+		return null;
+	}
+
 }

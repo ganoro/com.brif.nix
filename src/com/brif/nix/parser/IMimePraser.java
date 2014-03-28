@@ -8,5 +8,7 @@ public interface IMimePraser {
 	
 	public void collectAttachments(List<MessageParser.MessageAttachment> atts);
 	
+	public String getMetadata(String key);
+	
 }
 

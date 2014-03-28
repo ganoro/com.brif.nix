@@ -7,18 +7,15 @@ import javax.mail.internet.MimeMultipart;
 public class AlternativeContentParser extends MultiPartParser implements
 		IMimePraser {
 
+	private final IMimePraser proxy;
+
 	public AlternativeContentParser(MimeMultipart body) {
 		super(body);
-	}
 
-	/**
-	 * prefer the html, unless the html one is too promotional
-	 */
-	public String getContent() {
+		// find the html and no_html parts
+		BodyPart no_html = null;
+		BodyPart html = null;
 		try {
-			// find the html and no_html parts
-			BodyPart no_html = null;
-			BodyPart html = null;
 			for (int i = 0; i < body.getCount(); i++) {
 				BodyPart bp = body.getBodyPart(i);
 				if (body.getBodyPart(i).isMimeType("text/html")) {
@@ -27,25 +24,23 @@ public class AlternativeContentParser extends MultiPartParser implements
 					no_html = bp;
 				}
 			}
-
-			// if there is an html and it's not promotional - take it!
-			if (html != null) {
-				TextMessageParser hParser = (TextMessageParser) MimeParserFactory
-						.getParser(html);
-				String hContent = hParser.getContent();
-				if (!hParser.isPromotional() || no_html == null) {
-					return hContent;
-				}
-			}
-
-			// otherwise, just take the no html one
-			return MimeParserFactory.getParser(no_html).getContent();
-
 		} catch (MessagingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return "";
+
+		proxy = MimeParserFactory.getParser(html != null ? html : no_html);
 	}
 
+	/**
+	 * prefer the html
+	 */
+	public String getContent() {
+		return proxy != null ? proxy.getContent() : "";
+	}
+
+	@Override
+	public String getMetadata(String key) {
+		return proxy != null ? proxy.getMetadata(key) : null;
+	}
 }

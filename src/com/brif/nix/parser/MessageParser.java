@@ -48,6 +48,7 @@ public class MessageParser {
 
 	private String content = null;
 	private String subject = null;
+	private String unsubscribe = null;
 
 	private static FetchProfile fp = new FetchProfile();
 	private static Message[] container = new Message[1];
@@ -136,6 +137,15 @@ public class MessageParser {
 		final String c = getCharsetByHeader(header);
 		this.subject = convertToUTF(message.getSubject(), c);
 		return subject == null ? "" : subject;
+	}
+
+	public String getUnsubscribe() throws MessagingException {
+		if (this.unsubscribe != null) {
+			return this.unsubscribe;
+		}
+		final String header = this.message.getHeader("List-Unsubscribe", null);
+		this.unsubscribe = header;
+		return this.unsubscribe;
 	}
 
 	private String getCharsetByHeader(final String rawvalue) {
@@ -261,6 +271,13 @@ public class MessageParser {
 		}
 		result = result.substring(0, Math.min(result.length(), 70000));
 		this.content = convertToUTF(result, null);
+
+		final String metadata = parser
+				.getMetadata(TextMessageParser.UNSUBSCRIBE);
+		if (metadata != null) {
+			this.unsubscribe = metadata;
+		}
+
 		return content;
 	}
 
