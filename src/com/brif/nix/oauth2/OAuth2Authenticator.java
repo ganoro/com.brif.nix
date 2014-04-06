@@ -297,7 +297,12 @@ public class OAuth2Authenticator {
 			try {
 				imapFolder.idle();
 			} catch (MessagingException e) {
+				final String message = e.getMessage();
 				System.out.println("Messaging exception during IDLE");
+				if (message != null) {
+					System.out.println(message);
+				}
+				
 				throw e;
 			}
 		}
