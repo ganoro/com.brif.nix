@@ -363,7 +363,9 @@ public class OAuth2Authenticator {
 				} catch (FolderClosedException ex) {
 					ex.printStackTrace();
 					try {
-						connect(currentUser);
+						final GmailSSLStore imapStore = connect(currentUser);
+						final Folder[] list = imapStore.getFolder("[Gmail]").list();
+						folder = getAllMailFolder(list); // each locale has its own \All directory
 						if (!folder.isOpen()) {
 							folder.open(Folder.READ_ONLY);
 						}
