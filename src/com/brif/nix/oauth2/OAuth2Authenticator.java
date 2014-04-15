@@ -68,7 +68,7 @@ public class OAuth2Authenticator {
 		}
 
 		String email = args[0];
-		boolean isSetupProcess = args.length > 1 ? "setup:true"
+		boolean isSetupProcess = args.length == 1 ? "setup:true"
 				.equalsIgnoreCase(args[1]) : false;
 
 		// initialize provider
@@ -123,7 +123,7 @@ public class OAuth2Authenticator {
 			}
 
 			if (isSetupProcess) {
-
+				return;
 			}
 
 			dataAccess = new DataAccess(new SapiNotificationsHandler(
