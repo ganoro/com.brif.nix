@@ -68,6 +68,8 @@ public class OAuth2Authenticator {
 		}
 
 		String email = args[0];
+		boolean isSetupProcess = args.length > 1 ? "setup:true"
+				.equalsIgnoreCase(args[1]) : false;
 
 		// initialize provider
 		initialize();
@@ -103,8 +105,7 @@ public class OAuth2Authenticator {
 				dataAccess.updateUserToken(currentUser);
 			}
 
-			final Folder[] list = imapStore.getFolder("[Gmail]").list();
-			GmailFolder inbox = getAllMailFolder(list); // each locale has its own \All directory
+			GmailFolder inbox = resolveFolder(imapStore);
 			inbox.open(Folder.READ_ONLY);
 
 			// TODO map reduce ?
@@ -119,6 +120,10 @@ public class OAuth2Authenticator {
 					System.out.println("Adding message: " + mp.getMessageId());
 					dataAccess.addMessage(currentUser, mp);
 				}
+			}
+
+			if (isSetupProcess) {
+
 			}
 
 			dataAccess = new DataAccess(new SapiNotificationsHandler(
@@ -137,6 +142,47 @@ public class OAuth2Authenticator {
 		}
 	}
 
+	/**
+	 * People can do crazy thing with their folder structure - find it!
+	 * 
+	 * @param imapStore
+	 * @return
+	 * @throws Exception
+	 */
+	protected static GmailFolder resolveFolder(GmailSSLStore imapStore)
+			throws Exception {
+		Folder main = imapStore.getFolder("[Gmail]");
+		if (!main.exists()) {
+			main = getGmailFolder(imapStore);
+		}
+		final Folder[] list = main.list();
+		GmailFolder inbox = getAllMailFolder(list); // each locale has its
+													// own \All directory
+		return inbox;
+	}
+
+	protected static GmailFolder getGmailFolder(GmailSSLStore imapStore)
+			throws Exception {
+		final Folder[] list = imapStore.getDefaultFolder().list();
+		for (Folder f : list) {
+			GmailFolder gf = (GmailFolder) f;
+			final String[] attributes = gf.getAttributes();
+			if (attributes.length == 2) {
+				int isGmail = 2;
+				for (String string : attributes) {
+					if ("\\Noselect".equals(string)
+							|| "\\HasChildren".equals(string)) {
+						isGmail--;
+					}
+				}
+				if (isGmail == 0) {
+					return gf;
+				}
+			}
+		}
+		throw new Exception("Cannot find [Gmail] folder");
+	}
+
 	private static GmailFolder getAllMailFolder(Folder[] list) {
 		for (Folder folder : list) {
 			GmailFolder f = (GmailFolder) folder;
@@ -150,7 +196,7 @@ public class OAuth2Authenticator {
 			} catch (MessagingException e) {
 				e.printStackTrace();
 			}
-			
+
 		}
 		return null;
 	}
@@ -302,7 +348,7 @@ public class OAuth2Authenticator {
 				if (message != null) {
 					System.out.println(message);
 				}
-				
+
 				throw e;
 			}
 		}
@@ -364,8 +410,11 @@ public class OAuth2Authenticator {
 					ex.printStackTrace();
 					try {
 						final GmailSSLStore imapStore = connect(currentUser);
-						final Folder[] list = imapStore.getFolder("[Gmail]").list();
-						folder = getAllMailFolder(list); // each locale has its own \All directory
+						final Folder[] list = imapStore.getFolder("[Gmail]")
+								.list();
+						folder = getAllMailFolder(list); // each locale has its
+															// own \All
+															// directory
 						if (!folder.isOpen()) {
 							folder.open(Folder.READ_ONLY);
 						}
@@ -383,4 +432,3 @@ public class OAuth2Authenticator {
 		}
 	}
 }
-
