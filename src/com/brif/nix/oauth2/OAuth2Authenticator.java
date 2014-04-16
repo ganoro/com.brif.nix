@@ -107,6 +107,11 @@ public class OAuth2Authenticator {
 
 			GmailFolder inbox = resolveFolder(imapStore);
 			inbox.open(Folder.READ_ONLY);
+			
+			// if after all folder is not open - quit
+			if (!inbox.isOpen()) {
+				throw new Exception("Folder does not open correctly.");
+			}
 
 			// TODO map reduce ?
 			final long uidNext = inbox.getUIDNext();
