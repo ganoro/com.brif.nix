@@ -193,4 +193,31 @@ public class TextMessageParser implements IMimePraser {
 	public String getMetadata(String key) {
 		return key == UNSUBSCRIBE ? this.unsubscribe : null;
 	}
+
+	@Override
+	public String getIntro() {
+		if (this.content instanceof String) {
+			final String s = (String) this.content;
+			final int start = getFirstNonWhitespace(s);
+			final int end = getLastChar(s, start);
+			String result = s.substring(start, end);
+			return result.replaceAll("\\s+", " ");
+		}
+		return null;
+	}
+
+	private int getLastChar(String s, int start) {
+		return Math.min(start + 50, s.length() - 1);
+	}
+
+	private int getFirstNonWhitespace(String s) {
+		for (int i = 0; i < s.length(); i++) {
+		    if (!Character.isWhitespace(s.charAt(i))) {
+		        return i;
+		    }
+		}
+		return 0;
+	}
+	
+	
 }

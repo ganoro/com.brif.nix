@@ -192,6 +192,7 @@ public class DataAccess {
 		m.put("recipients_names", recipientsNames);
 
 		m.put("content", mp.getContent());
+		m.put("intro", mp.getIntro());
 		m.put("unsubscribe", mp.getUnsubscribe());
 
 		final JSONArray attachments = mp.getAttachmentsAsJSON();

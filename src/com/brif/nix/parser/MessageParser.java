@@ -55,6 +55,10 @@ public class MessageParser {
 
 	private User user;
 
+	final private IMimePraser parser;
+
+	private String intro = null;
+
 	private static final Address[] emptyAddress = new Address[0];;
 
 	static {
@@ -110,6 +114,8 @@ public class MessageParser {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		parser = MimeParserFactory.getParser(message);
 	}
 
 	public GmailFolder getFolder() {
@@ -264,7 +270,6 @@ public class MessageParser {
 		if (this.content != null) {
 			return this.content;
 		}
-		final IMimePraser parser = MimeParserFactory.getParser(message);
 		String result = parser.getContent();
 		if (result.length() == 0) {
 			return getSubject() == null ? "" : getSubject();
@@ -279,6 +284,14 @@ public class MessageParser {
 		}
 
 		return content;
+	}
+	
+	public String getIntro() {
+		if (this.intro != null) {
+			return this.intro;
+		}
+		this.intro = parser.getIntro();
+		return this.intro;
 	}
 
 	public JSONArray getAttachmentsAsJSON() {

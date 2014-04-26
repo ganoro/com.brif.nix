@@ -31,4 +31,9 @@ public class RelatedContentParser extends MultiPartParser {
 		return null;
 	}
 
+	@Override
+	public String getIntro() {
+		return null;
+	}
+
 }

@@ -316,8 +316,9 @@ public class OAuth2Authenticator {
 				imapStore = connectToImap("imap.gmail.com", 993,
 						currentUser.email, currentUser.access_token, debug);
 			} catch (Exception e1) {
+				System.out.println(e1.getMessage());
+				throw e1;
 				// TODO: invalid grant - application revoked???
-				// send a message
 			}
 		}
 		return imapStore;
@@ -416,11 +417,7 @@ public class OAuth2Authenticator {
 					ex.printStackTrace();
 					try {
 						final GmailSSLStore imapStore = connect(currentUser);
-						final Folder[] list = imapStore.getFolder("[Gmail]")
-								.list();
-						folder = getAllMailFolder(list); // each locale has its
-															// own \All
-															// directory
+						folder = resolveFolder(imapStore);
 						if (!folder.isOpen()) {
 							folder.open(Folder.READ_ONLY);
 						}

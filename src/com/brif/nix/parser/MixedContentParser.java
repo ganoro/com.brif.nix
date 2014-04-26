@@ -32,4 +32,9 @@ public class MixedContentParser extends MultiPartParser {
 	public String getMetadata(String key) {
 		return null;
 	}
+
+	@Override
+	public String getIntro() {
+		return null;
+	}
 }

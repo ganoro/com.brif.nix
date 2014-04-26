@@ -27,10 +27,20 @@ public class MimeParserFactory {
 			public String getMetadata(String key) {
 				return null;
 			}
+
+			@Override
+			public String getIntro() {
+				// TODO Auto-generated method stub
+				return null;
+			}
 		};
 	}
 
 	public static IMimePraser getParser(Part message) {
+		if (message == null) {
+			return theEmptyParser;
+		}
+		
 		IMimePraser result = null;
 		try {
 			Object content = null;
