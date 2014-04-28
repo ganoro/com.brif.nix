@@ -207,7 +207,7 @@ public class TextMessageParser implements IMimePraser {
 	}
 
 	private int getLastChar(String s, int start) {
-		return Math.min(start + 50, s.length() - 1);
+		return Math.min(start + 50, s.length());
 	}
 
 	private int getFirstNonWhitespace(String s) {
