@@ -8,7 +8,6 @@ public class AlternativeContentParser extends MultiPartParser implements
 		IMimePraser {
 
 	private final IMimePraser proxyContent;
-	private final IMimePraser proxyIntro;
 
 	public AlternativeContentParser(MimeMultipart body) {
 		super(body);
@@ -38,7 +37,6 @@ public class AlternativeContentParser extends MultiPartParser implements
 		}
 
 		proxyContent = MimeParserFactory.getParser(html != null ? html : no_html);
-		proxyIntro = MimeParserFactory.getParser(intro != null ? intro : null);
 	}
 
 	/**
@@ -55,6 +53,6 @@ public class AlternativeContentParser extends MultiPartParser implements
 
 	@Override
 	public String getIntro() {
-		return proxyIntro != null ? proxyIntro.getIntro() : "";
+		return proxyContent != null ? proxyContent.getIntro() : "";
 	}
 }

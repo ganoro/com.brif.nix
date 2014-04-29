@@ -196,8 +196,25 @@ public class TextMessageParser implements IMimePraser {
 
 	@Override
 	public String getIntro() {
+		String s = null;
 		if (this.content instanceof String) {
-			final String s = (String) this.content;
+			try {
+				if (message.isMimeType("text/html")) {
+					String charset = getMessageCharset(message);
+					Document doc = Jsoup.parse(message.getInputStream(),
+							charset, "");
+					
+					s = doc.text().trim();
+				} else {
+					s = (String) this.content;
+				}
+			} catch (MessagingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			final int start = getFirstNonWhitespace(s);
 			final int end = getLastChar(s, start);
 			String result = s.substring(start, end);

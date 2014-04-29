@@ -35,6 +35,20 @@ public class MixedContentParser extends MultiPartParser {
 
 	@Override
 	public String getIntro() {
-		return null;
+		try {
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < body.getCount(); i++) {
+				final BodyPart bodyPart = body.getBodyPart(i);
+				final IMimePraser parser = MimeParserFactory
+						.getParser(bodyPart);
+				final String content = parser.getIntro();
+				sb.append(content);
+			}
+			return sb.toString();
+		} catch (MessagingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return "";
 	}
 }
