@@ -42,7 +42,9 @@ public class MixedContentParser extends MultiPartParser {
 				final IMimePraser parser = MimeParserFactory
 						.getParser(bodyPart);
 				final String content = parser.getIntro();
-				sb.append(content);
+				if (content != null) {
+					sb.append(content);	
+				}
 			}
 			return sb.toString();
 		} catch (MessagingException e) {
