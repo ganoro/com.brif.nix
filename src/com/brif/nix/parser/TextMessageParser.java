@@ -45,16 +45,17 @@ public class TextMessageParser implements IMimePraser {
 					doc.select("head").remove();
 					doc.select("style").remove();
 
-					final Elements href = doc.select("a");
-					if (href != null && !href.isEmpty()) {
-						unsubscribe = getUnsubscribeLinks(href);
-					}
-
 					// remove tail
 					removeGmail(doc);
 					removeMsOutlook(doc);
 					removeIOS(doc);
 
+					// find all unsubscribe href
+					final Elements href = doc.select("a");
+					if (href != null && !href.isEmpty()) {
+						unsubscribe = getUnsubscribeLinks(href);
+					}
+					
 					if (doc.text().trim().length() != 0) {
 						return doc.outerHtml();
 					} else {
