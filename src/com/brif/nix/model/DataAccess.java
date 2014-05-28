@@ -3,6 +3,7 @@ package com.brif.nix.model;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -71,6 +72,29 @@ public class DataAccess {
 				parseObject.getObjectId(), parseObject.getString("locale"));
 	}
 
+
+	public List<String> findAllEmails() {
+		ParseQuery query1 = new ParseQuery(USERS_SCHEMA);
+		query1.select("email");
+		query1.setLimit(200);
+		List<ParseObject> profiles;
+		try {
+			profiles = query1.find();
+		} catch (ParseException e) {
+			return null;
+		}
+		if (profiles.size() == 0) {
+			return null;
+		}
+		
+		List<String> emails = new ArrayList<String>(profiles.size());
+		for (ParseObject parseObject : profiles) {
+			emails.add(parseObject.getString("email"));
+		} 
+		return emails;
+	}
+
+	
 	private Long findLatestMessageId(String objectId) {
 		ParseQuery query1 = new ParseQuery(getMsgTableByUser(objectId));
 		query1.orderByDescending("message_id").setLimit(1);

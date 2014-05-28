@@ -33,7 +33,20 @@ public class RelatedContentParser extends MultiPartParser {
 
 	@Override
 	public String getIntro() {
-		return null;
+		try {
+			// first is always the root???
+			final BodyPart bodyPart = body.getBodyPart(0);
+			final IMimePraser parser = MimeParserFactory.getParser(bodyPart);
+			final String intro = parser.getIntro();
+			return intro;
+
+		} catch (MessagingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return "";
+
 	}
 
 }

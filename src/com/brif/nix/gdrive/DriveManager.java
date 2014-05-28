@@ -16,6 +16,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.Drive.Files;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.ParentReference;
@@ -26,7 +27,7 @@ public class DriveManager {
 
 	private Drive service;
 	private List<ParentReference> rootFolder = null;
-	
+
 	private User user;
 
 	public static DriveManager getSingelton() {
@@ -35,10 +36,11 @@ public class DriveManager {
 
 	public void setUser(User currentUser) throws IOException {
 		this.user = currentUser;
-		
+		this.rootFolder = null;
+
 		HttpTransport httpTransport = new NetHttpTransport();
 		JsonFactory jsonFactory = new JacksonFactory();
-		
+
 		TokenResponse tr = new TokenResponse();
 		tr.setAccessToken(currentUser.access_token);
 		tr.setRefreshToken(currentUser.refresh_token);
@@ -62,7 +64,7 @@ public class DriveManager {
 		if (user == null) {
 			throw new IllegalArgumentException();
 		}
-		
+
 		if (rootFolder == null) {
 
 			final FileList atts = service
@@ -89,34 +91,56 @@ public class DriveManager {
 		return rootFolder;
 	}
 
+	public int count() throws IOException {
+		if (user == null) {
+			throw new IllegalArgumentException();
+		}
+
+		Files.List request = service.files().list();
+		int count = 0;
+		do {
+			try {
+				FileList files = request.execute();
+				count += files.size();
+				request.setPageToken(files.getNextPageToken());
+			} catch (IOException e) {
+				System.out.println("An error occurred: " + e);
+				request.setPageToken(null);
+			}
+		} while (request.getPageToken() != null
+				&& request.getPageToken().length() > 0);
+
+		return count;
+	}
+
 	public String uploadStream(String name, String type, InputStream is)
 			throws IOException {
 		if (user == null) {
 			throw new IllegalArgumentException();
 		}
-		
+
 		System.out.println("new attachment " + name + " " + type);
-		
-	    java.io.File f = new java.io.File("/tmp/tmp_" + user.objectId + name);
-	    FileOutputStream fos = new FileOutputStream(f);
-	    byte[] buf = new byte[1024*50];
-	    int bytesRead;
-	    while((bytesRead = is.read(buf))!=-1) {
-	        fos.write(buf, 0, bytesRead);
-	    }
-	    fos.close();
-		
+
+		java.io.File f = new java.io.File("/tmp/tmp_" + user.objectId + name);
+		FileOutputStream fos = new FileOutputStream(f);
+		byte[] buf = new byte[1024 * 50];
+		int bytesRead;
+		while ((bytesRead = is.read(buf)) != -1) {
+			fos.write(buf, 0, bytesRead);
+		}
+		fos.close();
+
 		File body = new File();
 		body.setTitle(name);
 		body.setMimeType(type);
 		body.setParents(getRootFolder());
 		FileContent fc = new FileContent(type, f);
 		File uf = service.files().insert(body, fc).execute();
-		
+
 		f.delete();
-		
+
 		return uf.getId();
-		
+
 	}
 
 }

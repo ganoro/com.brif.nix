@@ -114,7 +114,7 @@ public class MessageParser {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		parser = MimeParserFactory.getParser(message);
 	}
 
@@ -186,7 +186,8 @@ public class MessageParser {
 	public String getRecipients() throws MessagingException {
 		if (this.allRecipients == null) {
 			final String[] recipients = this.resolveRecipientsString(
-					message.getAllRecipients(), message.getFrom());
+					message.getAllRecipients(), message.getFrom(),
+					message.getReplyTo());
 			this.allRecipients = recipients[0];
 			this.allRecipientsNames = recipients[1];
 		}
@@ -224,7 +225,8 @@ public class MessageParser {
 					.substring(1, ref[0].indexOf(">"))));
 			originalRecipients = search.length > 0 ? this
 					.resolveRecipientsString(search[0].getAllRecipients(),
-							search[0].getFrom())[0] : "";
+							search[0].getFrom(), search[0].getReplyTo())[0]
+					: "";
 		}
 		return originalRecipients;
 
@@ -262,7 +264,10 @@ public class MessageParser {
 	}
 
 	public String getRecipientsId() throws MessagingException {
-		final String recipients = this.getRecipients();
+		String recipients = this.getRecipients();
+		if (this.getUnsubscribe() != null) {
+			recipients = Long.toString(this.message.getThrId());
+		}
 		return DigestUtils.md5Hex(recipients);
 	}
 
@@ -285,7 +290,7 @@ public class MessageParser {
 
 		return content;
 	}
-	
+
 	public String getIntro() {
 		if (this.intro != null) {
 			return this.intro;
@@ -317,11 +322,13 @@ public class MessageParser {
 	}
 
 	private String[] resolveRecipientsString(Address[] allRecipients,
-			Address[] from) {
+			Address[] from, Address[] replyTo) {
 		Address[] concat = null;
 		try {
 			concat = concat(new InternetAddress(user.email, user.email),
-					allRecipients, from);
+					allRecipients,
+					replyTo == null || replyTo.length == 0 ? from
+							: mixAddresses(from, replyTo));
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
@@ -354,6 +361,19 @@ public class MessageParser {
 			result2.deleteCharAt(result2.length() - 1);
 		}
 		return new String[] { result1.toString(), result2.toString() };
+	}
+
+	private Address[] mixAddresses(Address[] from, Address[] replyTo) {
+
+		InternetAddress f = (InternetAddress) from[0];
+		InternetAddress r = (InternetAddress) replyTo[0];
+
+		try {
+			f.setAddress(r.getAddress());
+		} catch (Exception e) {
+		}
+		return from;
+
 	}
 
 	@Override

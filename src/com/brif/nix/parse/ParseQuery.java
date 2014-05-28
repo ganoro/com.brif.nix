@@ -35,6 +35,7 @@ public class ParseQuery {
 
 	private int mLimit = -1;
 	private int mSkip = 0;
+	private String mSelect = null;
 
 	// query = key: [constraints]
 	// constraint = optional code : [value]
@@ -359,6 +360,16 @@ public class ParseQuery {
 
 					url += URLEncoder.encode("skip=" + mSkip, "UTF-8");
 				}
+				if (hasSelectConstraints()) {
+					if (!firstParam) {
+						url += "&";
+					} else {
+						firstParam = false;
+					}
+
+					url += URLEncoder.encode("keys=" + mSelect, "UTF-8");
+				}
+				
 			}
 		} catch (UnsupportedEncodingException e) {
 			url = "";
@@ -491,5 +502,13 @@ public class ParseQuery {
 	 */
 	public int getSkip() {
 		return mSkip;
+	}
+
+	public void select(String select) {
+		mSelect = select;
+	}
+	
+	private boolean hasSelectConstraints() {
+		return mSelect != null;
 	}
 }
