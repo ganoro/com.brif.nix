@@ -265,10 +265,18 @@ public class MessageParser {
 
 	public String getRecipientsId() throws MessagingException {
 		String recipients = this.getRecipients();
-		if (this.getUnsubscribe() != null) {
+		if (this.isPrecedence()) {
 			recipients = Long.toString(this.message.getThrId());
 		}
 		return DigestUtils.md5Hex(recipients);
+	}
+	
+	private boolean isPrecedence() {
+		try {
+			return this.message.getHeader("Precedence") != null;
+		} catch (MessagingException e) {
+			return false;
+		}
 	}
 
 	public String getContent() throws IOException, MessagingException {
