@@ -111,7 +111,7 @@ public class TextMessageParser implements IMimePraser {
 	}
 
 	@Override
-	public void collectAttachments(List<MessageAttachment> atts) {
+	public void collectAttachments(List<MessageAttachment> atts, String from) {
 		if (!(this.content instanceof String)) {
 			// TODO add attachment of text/* attachments
 		}

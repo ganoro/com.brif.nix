@@ -60,13 +60,44 @@ public class DriveManager {
 
 	}
 
-	public List<ParentReference> getRootFolder() throws IOException {
+	public List<ParentReference> getRootFolder(String from) throws IOException {
 		if (user == null) {
 			throw new IllegalArgumentException();
 		}
 
-		if (rootFolder == null) {
+		rootFolder = getRoot();
+		
+		if (from == null || from.length() == 0) {
+			return rootFolder;
+		}
+		
+		final FileList atts = service
+				.files()
+				.list()
+				.setQ("'" + rootFolder.get(0).getId() + "' in parents and title = '" + from.trim() + "' and mimeType = 'application/vnd.google-apps.folder'")
+				.execute();
+		File folder;
 
+		if (atts.getItems().isEmpty()) {
+			File body = new File();
+			body.setTitle(from.trim());
+			body.setMimeType("application/vnd.google-apps.folder");
+			body.setDescription("Brif's attachments directory");
+			body.setParents(rootFolder);
+			folder = service.files().insert(body).execute();
+		} else {
+			folder = atts.getItems().get(0);
+		}
+		ParentReference newParent = new ParentReference();
+		newParent.setId(folder.getId());
+		List<ParentReference> result = new ArrayList<ParentReference>(1);
+		result.add(newParent);
+			
+		return result;
+	}
+
+	protected List<ParentReference> getRoot() throws IOException {
+		if (rootFolder == null) {
 			final FileList atts = service
 					.files()
 					.list()
@@ -113,13 +144,18 @@ public class DriveManager {
 		return count;
 	}
 
-	public String uploadStream(String name, String type, InputStream is)
+	public String uploadStream(String name, String type, InputStream is, String from)
 			throws IOException {
 		if (user == null) {
 			throw new IllegalArgumentException();
 		}
-
+		
 		System.out.println("new attachment " + name + " " + type);
+		
+		if (name == null || name.equals("unknown_filename") || name.endsWith(".ics")) {
+			System.out.println("skipped");
+			return null;
+		}
 
 		java.io.File f = new java.io.File("/tmp/tmp_" + user.objectId + name);
 		FileOutputStream fos = new FileOutputStream(f);
@@ -133,7 +169,7 @@ public class DriveManager {
 		File body = new File();
 		body.setTitle(name);
 		body.setMimeType(type);
-		body.setParents(getRootFolder());
+		body.setParents(getRootFolder(from));
 		FileContent fc = new FileContent(type, f);
 		File uf = service.files().insert(body, fc).execute();
 

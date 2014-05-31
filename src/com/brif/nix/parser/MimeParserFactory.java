@@ -20,7 +20,7 @@ public class MimeParserFactory {
 			}
 
 			@Override
-			public void collectAttachments(List<MessageAttachment> atts) {
+			public void collectAttachments(List<MessageAttachment> atts, String from) {
 			}
 
 			@Override

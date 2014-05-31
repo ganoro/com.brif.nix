@@ -83,7 +83,7 @@ public class MimeHelper {
 		return getHeaderParameter(header[0], name);
 	}
 
-	public static final MessageAttachment getAttachment(Part part)
+	public static final MessageAttachment getAttachment(Part part, String from)
 			throws MessagingException, IOException {
 
 		String disposition = part.getDisposition();
@@ -108,7 +108,7 @@ public class MimeHelper {
 				|| (dispositionFilename != null);
 
 		return attachment ? new MessageAttachment(dispositionType,
-				dispositionFilename) : null;
+				dispositionFilename, from) : null;
 	}
 
 	private static String getFilename(Part part) throws MessagingException {

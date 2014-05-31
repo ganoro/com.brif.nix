@@ -21,22 +21,21 @@ public abstract class MultiPartParser implements IMimePraser {
 	}
 
 	@Override
-	public void collectAttachments(List<MessageAttachment> atts) {
+	public void collectAttachments(List<MessageAttachment> atts, String from) {
 		try {
 			for (int i = 0; i < body.getCount(); i++) {
 				Part bp = body.getBodyPart(i);
 				if (bp.isMimeType("multipart/*")) {
 					final IMimePraser parser = MimeParserFactory.getParser(bp);
-					parser.collectAttachments(atts);
+					parser.collectAttachments(atts, from);
 				} else {
 					final MessageAttachment attachment = MimeHelper
-							.getAttachment(bp);
+							.getAttachment(bp, from);
 					if (attachment != null) {
-						atts.add(attachment);
-						if (attachment != null) {
-							uploadCopy(attachment, bp);
+						uploadCopy(attachment, bp);
+						if (attachment.key != null) {
+							atts.add(attachment);
 						}
-
 					}
 				}
 
@@ -57,10 +56,9 @@ public abstract class MultiPartParser implements IMimePraser {
 		
 		// Insert a file
 		final DriveManager singelton = DriveManager.getSingelton();
-		final String uploadStream = singelton.uploadStream(attachment.name, attachment.type.toLowerCase(), is);
+		final String uploadStream = singelton.uploadStream(attachment.name, attachment.type.toLowerCase(), is, attachment.from);
 		System.out.println("File ID: " + uploadStream);
-		attachment.key = uploadStream;
-		
+		attachment.key = uploadStream;	
 	}
 
 	protected static boolean isImage(final String dispositionType) {

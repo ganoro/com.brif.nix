@@ -15,7 +15,6 @@ public class AlternativeContentParser extends MultiPartParser implements
 		// find the html and no_html parts
 		BodyPart no_html = null;
 		BodyPart html = null;
-		BodyPart intro = null;
 		try {
 			for (int i = 0; i < body.getCount(); i++) {
 				final BodyPart bodyPart = body.getBodyPart(i);
@@ -26,17 +25,14 @@ public class AlternativeContentParser extends MultiPartParser implements
 				} else {
 					no_html = bp;
 				}
-				
-				if (bodyPart.isMimeType("text/plain")) {
-					intro = bp;
-				}
 			}
 		} catch (MessagingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-		proxyContent = MimeParserFactory.getParser(html != null ? html : no_html);
+		proxyContent = MimeParserFactory.getParser(html != null ? html
+				: no_html);
 	}
 
 	/**

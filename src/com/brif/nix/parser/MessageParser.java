@@ -77,11 +77,13 @@ public class MessageParser {
 		String type;
 		String name;
 		String key;
+		String from;
 
 		public MessageAttachment(String dispositionType,
-				String dispositionFilename) {
+				String dispositionFilename, String from) {
 			this.type = dispositionType;
 			this.name = dispositionFilename;
+			this.from = from;
 		}
 
 		public JSONObject toJSONObject() {
@@ -270,7 +272,7 @@ public class MessageParser {
 		}
 		return DigestUtils.md5Hex(recipients);
 	}
-	
+
 	private boolean isPrecedence() {
 		try {
 			return this.message.getHeader("Precedence") != null;
@@ -322,11 +324,27 @@ public class MessageParser {
 	protected List<MessageAttachment> getAttachments() {
 		final IMimePraser parser = MimeParserFactory.getParser(message);
 		List<MessageAttachment> atts = new ArrayList<MessageAttachment>();
-		parser.collectAttachments(atts);
+		parser.collectAttachments(atts, getEmailAddress(this.message));
 		if (atts.size() == 0) {
 			return null;
 		}
 		return atts;
+	}
+
+	private String getEmailAddress(GmailMessage message) {
+		Address[] from = null;
+		try {
+			from = message.getFrom();
+		} catch (MessagingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if (from == null || from.length == 0) {
+			return "unknown";
+		}
+		
+		InternetAddress ia = (InternetAddress) from[0];
+		return ia.getAddress();
 	}
 
 	private String[] resolveRecipientsString(Address[] allRecipients,
