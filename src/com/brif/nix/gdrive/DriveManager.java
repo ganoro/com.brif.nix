@@ -152,7 +152,7 @@ public class DriveManager {
 		
 		System.out.println("new attachment " + name + " " + type);
 		
-		if (name == null || name.equals("unknown_filename") || name.endsWith(".ics")) {
+		if (name == null || name.equals("unknown_filename")) {
 			System.out.println("skipped");
 			return null;
 		}
