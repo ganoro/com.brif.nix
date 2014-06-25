@@ -306,6 +306,9 @@ public class MessageParser {
 			return this.intro;
 		}
 		this.intro = parser.getIntro();
+		if (this.intro != null) {
+			this.intro.trim();
+		}
 		return this.intro;
 	}
 
