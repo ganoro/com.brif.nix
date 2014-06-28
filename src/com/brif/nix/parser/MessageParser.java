@@ -345,7 +345,7 @@ public class MessageParser {
 		if (from == null || from.length == 0) {
 			return "unknown";
 		}
-		
+
 		InternetAddress ia = (InternetAddress) from[0];
 		return ia.getAddress();
 	}
@@ -355,9 +355,8 @@ public class MessageParser {
 		Address[] concat = null;
 		try {
 			concat = concat(new InternetAddress(user.email, user.email),
-					allRecipients,
 					replyTo == null || replyTo.length == 0 ? from
-							: mixAddresses(from, replyTo));
+							: mixAddresses(from, replyTo), allRecipients);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
