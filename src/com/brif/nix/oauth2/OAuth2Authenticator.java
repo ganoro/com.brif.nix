@@ -61,7 +61,7 @@ public class OAuth2Authenticator {
 	public static void main(String args[]) throws Exception {
 
 		// command-line handling
-		if (args.length == 0 || !isValidEmailAddress(args[0])) {
+		if (args.length == 0) {
 			System.out.println("Usage: java -jar nix.jar <user's email>");
 			System.out.println("\t\tError loading user's email");
 			return;
