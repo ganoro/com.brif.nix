@@ -1,5 +1,5 @@
 #!/bin/sh
-cd /brif-nix
+cd /root/brif-nix
 SERVICE_NAME=Nix%ID%
 PID_PATH_NAME=/tmp/Nix%ID%-pid
 case $1 in
