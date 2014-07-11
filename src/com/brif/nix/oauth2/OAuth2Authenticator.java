@@ -67,7 +67,7 @@ public class OAuth2Authenticator {
 			return;
 		}
 
-		String email = args[0];
+		String argument = args[0];
 		boolean isSetupProcess = args.length > 1 ? "setup:true"
 				.equalsIgnoreCase(args[1]) : false;
 
@@ -81,9 +81,9 @@ public class OAuth2Authenticator {
 
 			// user info
 			DataAccess dataAccess = new DataAccess();
-			final User currentUser = dataAccess.findByEmail(email);
+			final User currentUser = dataAccess.find(argument);
 			if (currentUser == null) {
-				System.out.println("user " + email + " couldn't be found");
+				System.out.println("user " + argument + " couldn't be found");
 				return;
 			}
 

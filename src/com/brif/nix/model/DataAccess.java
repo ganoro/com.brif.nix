@@ -49,6 +49,18 @@ public class DataAccess {
 	public DataAccess() {
 		this(new EmptyNotificationHandler());
 	}
+	
+	public User find(String string) {
+		User user = this.findById(string);
+		if (user != null) {
+			return user;
+		}
+		user = this.findByEmail(string);
+		if (user != null) {
+			return user;
+		}
+		return null;
+	}
 
 	public User findByEmail(String email) {
 		ParseQuery query1 = new ParseQuery(USERS_SCHEMA);
@@ -67,6 +79,26 @@ public class DataAccess {
 		final Long next_uid = findLatestMessageId(parseObject.getObjectId());
 
 		return new User(email, parseObject.getString("access_token"),
+				parseObject.getString("refresh_token"),
+				parseObject.getString("origin"), next_uid,
+				parseObject.getObjectId(), parseObject.getString("locale"));
+	}
+
+	public User findById(String id) {
+		ParseQuery query = new ParseQuery(USERS_SCHEMA);
+		ParseObject parseObject = null;
+		try {
+			parseObject = query.get(id);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if (parseObject == null) {
+			return null;
+		}
+		final Long next_uid = findLatestMessageId(parseObject.getObjectId());
+
+		return new User(parseObject.getString("email"), parseObject.getString("access_token"),
 				parseObject.getString("refresh_token"),
 				parseObject.getString("origin"), next_uid,
 				parseObject.getObjectId(), parseObject.getString("locale"));
