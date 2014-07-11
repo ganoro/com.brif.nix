@@ -90,8 +90,6 @@ public class DataAccess {
 		try {
 			parseObject = query.get(id);
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		if (parseObject == null) {
 			return null;
