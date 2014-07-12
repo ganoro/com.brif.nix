@@ -71,7 +71,7 @@ public class StatsProcess {
 		for (String email : findAllEmails) {
 			System.out.println(email);
 			
-			final User currentUser = dataAccess.findByEmail(email);
+			final User currentUser = dataAccess.find(email);
 			
 			if (currentUser == null) {
 				System.out.println("user " + email + " couldn't be found");

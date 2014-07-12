@@ -51,20 +51,20 @@ public class DataAccess {
 	}
 	
 	public User find(String string) {
-		User user = this.findById(string);
+		User user = this.findBy("objectId", string);
 		if (user != null) {
 			return user;
 		}
-		user = this.findByEmail(string);
+		user = this.findBy("email", string);
 		if (user != null) {
 			return user;
 		}
 		return null;
 	}
 
-	public User findByEmail(String email) {
+	public User findBy(String field, String email) {
 		ParseQuery query1 = new ParseQuery(USERS_SCHEMA);
-		query1.whereEqualTo("email", email);
+		query1.whereEqualTo(field, email);
 		List<ParseObject> profiles;
 		try {
 			profiles = query1.find();
@@ -78,30 +78,11 @@ public class DataAccess {
 
 		final Long next_uid = findLatestMessageId(parseObject.getObjectId());
 
-		return new User(email, parseObject.getString("access_token"),
-				parseObject.getString("refresh_token"),
-				parseObject.getString("origin"), next_uid,
-				parseObject.getObjectId(), parseObject.getString("locale"));
-	}
-
-	public User findById(String id) {
-		ParseQuery query = new ParseQuery(USERS_SCHEMA);
-		ParseObject parseObject = null;
-		try {
-			parseObject = query.get(id);
-		} catch (ParseException e) {
-		}
-		if (parseObject == null) {
-			return null;
-		}
-		final Long next_uid = findLatestMessageId(parseObject.getObjectId());
-
 		return new User(parseObject.getString("email"), parseObject.getString("access_token"),
 				parseObject.getString("refresh_token"),
 				parseObject.getString("origin"), next_uid,
 				parseObject.getObjectId(), parseObject.getString("locale"));
 	}
-
 
 	public List<String> findAllEmails() {
 		ParseQuery query1 = new ParseQuery(USERS_SCHEMA);
