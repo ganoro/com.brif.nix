@@ -526,4 +526,13 @@ public class MessageParser {
 		}
 		return header;
 	}
+
+	public boolean isAfter(long anchorTime) {
+		Date sentDate = null;
+		try {
+			sentDate = this.message.getSentDate();
+		} catch (MessagingException e) {
+		}
+		return sentDate == null ? false : sentDate.getTime() > anchorTime;
+	}
 }

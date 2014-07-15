@@ -71,6 +71,8 @@ public class OAuth2Authenticator {
 		boolean isSetupProcess = args.length > 1 ? "setup:true"
 				.equalsIgnoreCase(args[1]) : false;
 
+		long anchorTime = args.length > 2 ? Long.parseLong(args[2]) : 0;
+
 		// initialize provider
 		initialize();
 
@@ -92,6 +94,9 @@ public class OAuth2Authenticator {
 			drive.setUser(currentUser);
 
 			// IMAP connection
+			String originalAccessToken = currentUser.access_token; // store the
+																	// original
+																	// token
 			GmailSSLStore imapStore = connect(currentUser);
 			if (imapStore == null) {
 				// TODO Auto-generated catch block
@@ -100,14 +105,13 @@ public class OAuth2Authenticator {
 			}
 
 			// update with latest access_token
-			String originalAccessToken = currentUser.access_token;
 			if (currentUser.access_token != originalAccessToken) {
 				dataAccess.updateUserToken(currentUser);
 			}
 
 			GmailFolder inbox = resolveFolder(imapStore);
 			inbox.open(Folder.READ_ONLY);
-			
+
 			// if after all folder is not open - quit
 			if (!inbox.isOpen()) {
 				throw new Exception("Folder does not open correctly.");
@@ -121,6 +125,15 @@ public class OAuth2Authenticator {
 			for (int i = messages.length - 1; i >= 0; i--) {
 				Message message = messages[i];
 				MessageParser mp = new MessageParser(message, currentUser);
+				// for setup process, parse only until the given date
+				if (isSetupProcess && anchorTime != 0 && mp.isAfter(anchorTime)) {
+					continue;
+				}
+				// for listener process, parse only after the given date
+				if (!isSetupProcess && anchorTime != 0
+						&& !mp.isAfter(anchorTime)) {
+					break;
+				}
 				if (!mp.isDraft()) {
 					System.out.println("Adding message: " + mp.getMessageId());
 					dataAccess.addMessage(currentUser, mp);
@@ -272,8 +285,9 @@ public class OAuth2Authenticator {
 	 * @return
 	 * @throws IOException
 	 */
-	public static String refreshAccessToken(String refreshToken,
-			String clientId, String clientSecret) throws IOException {
+	public static void refreshAccessToken(User currentUser,
+			String refreshToken, String clientId, String clientSecret)
+			throws IOException {
 		try {
 
 			TokenResponse response = new GoogleRefreshTokenRequest(
@@ -281,7 +295,10 @@ public class OAuth2Authenticator {
 					clientId, clientSecret).execute();
 			String accessToken = response.getAccessToken();
 			System.out.println("Access token: " + accessToken);
-			return accessToken;
+			currentUser.access_token = accessToken;
+			if (response.getRefreshToken() != null) {
+				currentUser.refresh_token = response.getRefreshToken();
+			}
 		} catch (TokenResponseException e) {
 			// TODO Auto-generated catch block
 			if (e.getDetails() != null) {
@@ -297,7 +314,6 @@ public class OAuth2Authenticator {
 				System.err.println(e.getMessage());
 			}
 		}
-		return null;
 	}
 
 	private static GmailSSLStore connect(User currentUser) throws Exception,
@@ -330,11 +346,8 @@ public class OAuth2Authenticator {
 		OAuth2Configuration conf = OAuth2Configuration
 				.getConfiguration(currentUser.origin);
 
-		final String access_token = refreshAccessToken(
-				currentUser.refresh_token, conf.get("client_id"),
-				conf.get("client_secret"));
-
-		currentUser.access_token = access_token;
+		refreshAccessToken(currentUser, currentUser.refresh_token,
+				conf.get("client_id"), conf.get("client_secret"));
 	}
 
 	public static void startKeepAliveListener(IMAPFolder imapFolder,
@@ -364,17 +377,6 @@ public class OAuth2Authenticator {
 		if (t.isAlive()) {
 			t.interrupt();
 		}
-	}
-
-	private static boolean isValidEmailAddress(String email) {
-		boolean result = true;
-		try {
-			InternetAddress emailAddr = new InternetAddress(email);
-			emailAddr.validate();
-		} catch (AddressException ex) {
-			result = false;
-		}
-		return result;
 	}
 
 	/**
