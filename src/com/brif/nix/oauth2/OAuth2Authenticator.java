@@ -15,8 +15,6 @@ import javax.mail.FolderClosedException;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
 
 import com.brif.nix.gdrive.DriveManager;
 import com.brif.nix.listeners.NixMessageCountListener;
@@ -54,11 +52,23 @@ public class OAuth2Authenticator {
 					"com.brif.nix.oauth2.OAuth2SaslClientFactory");
 		}
 	}
+	
+	public static void main(String args[]) throws Exception {
+		String selfNixer = args.length > 3 ? args[3] : null;
+		try {
+			_main(args);
+		} finally {
+			if (selfNixer != null) {
+				DataAccess dataAccess = new DataAccess();
+				dataAccess.releaseNixer(selfNixer);
+			}
+		}
+	}
 
 	/**
 	 * Authenticates to IMAP with parameters passed in on the command-line.
 	 */
-	public static void main(String args[]) throws Exception {
+	public static void _main(String args[]) throws Exception {
 
 		// command-line handling
 		if (args.length == 0) {

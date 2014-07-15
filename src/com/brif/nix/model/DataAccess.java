@@ -39,6 +39,8 @@ public class DataAccess {
 	private static final String ACCESS_KEY = "NoVHzsTel7csA1aGoMBNyVz2mHzed4LaSb1d4lme";
 	private static final String APP = "mMS3oCiZOHC15v8OGTidsRgHI0idYut39QKrIhIH";
 
+	private static final String NIXERS_SCHEMA = "Nixers";
+	
 	private NotificationsHandler notificationsHandler;
 
 	public DataAccess(NotificationsHandler notificationsHandler) {
@@ -294,6 +296,17 @@ public class DataAccess {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public void releaseNixer(String selfNixer) {
+		ParseObject nixer = new ParseObject(NIXERS_SCHEMA);
+		nixer.setObjectId(selfNixer);
+		try {
+			nixer.increment("free_spots", 1);
+		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

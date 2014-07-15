@@ -6,7 +6,7 @@ case $1 in
     start)
         echo "Starting $SERVICE_NAME ..."
         if [ ! -f $PID_PATH_NAME ]; then
-            nohup ant run -Darg0=%ID% >/var/log/%ID%.log 2>&1 & echo $! > $PID_PATH_NAME
+            nohup ant run -Darg0=%ID% -Darg1=setup:false -Darg2=%NOW%  >/var/log/%ID%.log 2>&1 & echo $! > $PID_PATH_NAME
             echo "$SERVICE_NAME started ..."
         else
             echo "$SERVICE_NAME is already running ..."
@@ -31,7 +31,7 @@ case $1 in
             echo "$SERVICE_NAME stopped ...";
             rm $PID_PATH_NAME
             echo "$SERVICE_NAME starting ..."
-            nohup ant run -Darg0=%ID% >/var/log/%ID%.log 2>&1 & echo $! > $PID_PATH_NAME
+            nohup ant run -Darg0=%ID% -Darg1=setup:false -Darg2=%NOW%  >/var/log/%ID%.log 2>&1 & echo $! > $PID_PATH_NAME
             echo "$SERVICE_NAME started ..."
         else
             echo "$SERVICE_NAME is not running ..."
