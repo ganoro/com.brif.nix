@@ -321,6 +321,7 @@ public class DataAccess {
 		nixer.setObjectId(selfNixer);
 		try {
 			nixer.increment("free_spots", 1);
+			System.out.println("free_spots updated: " + nixer.getString("updatedAt"));
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -331,14 +332,14 @@ public class DataAccess {
 		if (this.user == null || user.objectId == null) {
 			return;
 		}
-		
+
 		// search for existing setting for this user
 		ParseQuery query = new ParseQuery(SETTINGS_SCHEMA);
 		query.whereEqualTo("key", "ready");
 		query.whereEqualTo("user_id", user.objectId);
 		try {
 			List<ParseObject> find = query.find();
-			
+
 			// if found - update its value
 			if (find != null && find.size() > 0) {
 				final ParseObject parseObject = find.get(0);
