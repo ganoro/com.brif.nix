@@ -36,22 +36,37 @@ public class DataAccess {
 	// parse-related constants
 	private static final String MESSAGES_SCHEMA = "Messages";
 	private static final String USERS_SCHEMA = "Users";
+	private static final String NIXERS_SCHEMA = "Nixers";
+	private static final String SETTINGS_SCHEMA = "Settings";
+
 	private static final String ACCESS_KEY = "NoVHzsTel7csA1aGoMBNyVz2mHzed4LaSb1d4lme";
 	private static final String APP = "mMS3oCiZOHC15v8OGTidsRgHI0idYut39QKrIhIH";
 
-	private static final String NIXERS_SCHEMA = "Nixers";
-	
 	private NotificationsHandler notificationsHandler;
+	private User user;
 
 	public DataAccess(NotificationsHandler notificationsHandler) {
-		this.notificationsHandler = notificationsHandler;
 		Parse.initialize(APP, ACCESS_KEY);
+		this.notificationsHandler = notificationsHandler;
 	}
 
 	public DataAccess() {
 		this(new EmptyNotificationHandler());
 	}
-	
+
+	public DataAccess(String first_argument) {
+		this();
+		this.setUser(this.find(first_argument));
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+	public User getUser() {
+		return this.user;
+	}
+
 	public User find(String string) {
 		User user = this.findBy("objectId", string);
 		if (user != null) {
@@ -80,7 +95,8 @@ public class DataAccess {
 
 		final Long next_uid = findLatestMessageId(parseObject.getObjectId());
 
-		return new User(parseObject.getString("email"), parseObject.getString("access_token"),
+		return new User(parseObject.getString("email"),
+				parseObject.getString("access_token"),
 				parseObject.getString("refresh_token"),
 				parseObject.getString("origin"), next_uid,
 				parseObject.getObjectId(), parseObject.getString("locale"));
@@ -99,15 +115,14 @@ public class DataAccess {
 		if (profiles.size() == 0) {
 			return null;
 		}
-		
+
 		List<String> emails = new ArrayList<String>(profiles.size());
 		for (ParseObject parseObject : profiles) {
 			emails.add(parseObject.getString("email"));
-		} 
+		}
 		return emails;
 	}
 
-	
 	private Long findLatestMessageId(String objectId) {
 		ParseQuery query1 = new ParseQuery(getMsgTableByUser(objectId));
 		query1.orderByDescending("message_id").setLimit(1);
@@ -310,5 +325,39 @@ public class DataAccess {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	public void enableUser() {
+		if (this.user == null || user.objectId == null) {
+			return;
+		}
+		
+		// search for existing setting for this user
+		ParseQuery query = new ParseQuery(SETTINGS_SCHEMA);
+		query.whereEqualTo("key", "ready");
+		query.whereEqualTo("user_id", user.objectId);
+		try {
+			List<ParseObject> find = query.find();
+			
+			// if found - update its value
+			if (find != null && find.size() > 0) {
+				final ParseObject parseObject = find.get(0);
+				if (!"true".equalsIgnoreCase(parseObject.getString("value"))) {
+					parseObject.put("value", "true");
+					parseObject.save();
+				}
+			} else {
+				// add the setting to the user
+				ParseObject settings = new ParseObject(SETTINGS_SCHEMA);
+				settings.put("key", "ready");
+				settings.put("user_id", user.objectId);
+				settings.put("value", "true");
+				settings.save();
+			}
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 }

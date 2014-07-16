@@ -42,6 +42,8 @@ import com.sun.mail.imap.protocol.IMAPProtocol;
  */
 public class OAuth2Authenticator {
 
+	private static DataAccess dataAccess;
+
 	public static final class OAuth2Provider extends Provider {
 		private static final long serialVersionUID = 1L;
 
@@ -58,9 +60,9 @@ public class OAuth2Authenticator {
 		try {
 			_main(args);
 		} finally {
-			if (selfNixer != null) {
-				DataAccess dataAccess = new DataAccess();
+			if (selfNixer != null && dataAccess != null) {
 				dataAccess.releaseNixer(selfNixer);
+				dataAccess.enableUser();
 			}
 		}
 	}
@@ -77,7 +79,7 @@ public class OAuth2Authenticator {
 			return;
 		}
 
-		String argument = args[0];
+		String first_argument = args[0];
 		boolean isSetupProcess = args.length > 1 ? "setup:true"
 				.equalsIgnoreCase(args[1]) : false;
 
@@ -91,15 +93,14 @@ public class OAuth2Authenticator {
 
 			logStatus();
 
-			// user info
-			DataAccess dataAccess = new DataAccess();
-			final User currentUser = dataAccess.find(argument);
+			dataAccess = new DataAccess(first_argument);
+			User currentUser = dataAccess.getUser();
 			if (currentUser == null) {
-				System.out.println("user " + argument + " couldn't be found");
+				System.out.println("user " + first_argument + " couldn't be found");
 				return;
 			}
 
-			// init google drive
+			// initialize google drive
 			DriveManager drive = DriveManager.getSingelton();
 			drive.setUser(currentUser);
 
@@ -129,13 +130,13 @@ public class OAuth2Authenticator {
 
 			// TODO map reduce ?
 			final long uidNext = inbox.getUIDNext();
-			long min = Math.max(currentUser.next_uid + 1, uidNext - 1000);
+			long min = Math.max(currentUser.next_uid + 1, uidNext - 2000);
 
 			final Message[] messages = inbox.getMessagesByUID(min, uidNext);
 			for (int i = messages.length - 1; i >= 0; i--) {
 				Message message = messages[i];
 				MessageParser mp = new MessageParser(message, currentUser);
-				// for setup process, parse only until the given date
+				// for setup process, parse only from the given date
 				if (isSetupProcess && anchorTime != 0 && mp.isAfter(anchorTime)) {
 					continue;
 				}
