@@ -57,9 +57,6 @@ public class OAuth2Authenticator {
 	
 	public static void main(String args[]) throws Exception {
 		String selfNixer = args.length > 3 ? args[3] : null;
-		System.out.println(selfNixer);
-		System.out.println(args[2]);
-		System.out.println(args[3]);
 		try {
 			_main(args);
 		} finally {
