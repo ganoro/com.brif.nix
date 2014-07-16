@@ -316,18 +316,6 @@ public class DataAccess {
 		}
 	}
 
-	public void releaseNixer(String selfNixer) {
-		ParseObject nixer = new ParseObject(NIXERS_SCHEMA);
-		nixer.setObjectId(selfNixer);
-		try {
-			nixer.increment("free_spots", 1);
-			System.out.println("free_spots updated: " + nixer.getString("updatedAt"));
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
 	public void enableUser() {
 		if (this.user == null || user.objectId == null) {
 			return;

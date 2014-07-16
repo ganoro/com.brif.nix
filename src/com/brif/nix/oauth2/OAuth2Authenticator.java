@@ -55,23 +55,10 @@ public class OAuth2Authenticator {
 		}
 	}
 	
-	public static void main(String args[]) throws Exception {
-		String selfNixer = args.length > 3 ? args[3] : null;
-		try {
-			_main(args);
-		} finally {
-			System.out.println(dataAccess.toString());
-			if (selfNixer != null && dataAccess != null) {
-				dataAccess.releaseNixer(selfNixer);
-				dataAccess.enableUser();
-			}
-		}
-	}
-
 	/**
 	 * Authenticates to IMAP with parameters passed in on the command-line.
 	 */
-	public static void _main(String args[]) throws Exception {
+	public static void main(String args[]) throws Exception {
 
 		// command-line handling
 		if (args.length == 0) {
@@ -154,6 +141,7 @@ public class OAuth2Authenticator {
 
 			// if it is the user's setup process - quit here...
 			if (isSetupProcess) {
+				dataAccess.enableUser();
 				return;
 			}
 
