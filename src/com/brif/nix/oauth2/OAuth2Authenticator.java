@@ -147,6 +147,8 @@ public class OAuth2Authenticator {
 
 			dataAccess = new DataAccess(new SapiNotificationsHandler(
 					"http://api.brif.us:443"));
+			dataAccess.setUser(currentUser);
+			
 			// https://bugzilla.mozilla.org/show_bug.cgi?id=518581
 			inbox.addMessageCountListener(new NixMessageCountListener(
 					currentUser, dataAccess));
@@ -401,8 +403,9 @@ public class OAuth2Authenticator {
 		public void run() {
 			while (!Thread.interrupted()) {
 				try {
+					dataAccess.touchUser();
 					Thread.sleep(KEEP_ALIVE_FREQ);
-
+					
 					// Perform a NOOP just to keep alive the connection
 					System.out
 							.println("Performing a NOOP to keep alvie the connection");
