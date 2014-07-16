@@ -359,6 +359,8 @@ public class DataAccess {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		System.out.println("User enabled");
 
 	}
 }
