@@ -58,8 +58,11 @@ public class OAuth2Authenticator {
 	public static void main(String args[]) throws Exception {
 		String selfNixer = args.length > 3 ? args[3] : null;
 		try {
+			System.out.println("_main:start");			
 			_main(args);
+			System.out.println("_main:end");
 		} finally {
+			System.out.println("finally");
 			if (selfNixer != null && dataAccess != null) {
 				dataAccess.releaseNixer(selfNixer);
 				dataAccess.enableUser();
