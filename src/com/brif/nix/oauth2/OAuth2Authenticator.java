@@ -21,6 +21,7 @@ import com.brif.nix.listeners.NixMessageCountListener;
 import com.brif.nix.model.DataAccess;
 import com.brif.nix.model.User;
 import com.brif.nix.notifications.SapiNotificationsHandler;
+import com.brif.nix.parse.ParseException;
 import com.brif.nix.parser.MessageParser;
 import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.auth.oauth2.TokenResponseException;
@@ -54,7 +55,7 @@ public class OAuth2Authenticator {
 					"com.brif.nix.oauth2.OAuth2SaslClientFactory");
 		}
 	}
-	
+
 	/**
 	 * Authenticates to IMAP with parameters passed in on the command-line.
 	 */
@@ -84,7 +85,8 @@ public class OAuth2Authenticator {
 			dataAccess = new DataAccess(first_argument);
 			User currentUser = dataAccess.getUser();
 			if (currentUser == null) {
-				System.out.println("user " + first_argument + " couldn't be found");
+				System.out.println("user " + first_argument
+						+ " couldn't be found");
 				return;
 			}
 
@@ -148,12 +150,16 @@ public class OAuth2Authenticator {
 			dataAccess = new DataAccess(new SapiNotificationsHandler(
 					"http://api.brif.us:443"));
 			dataAccess.setUser(currentUser);
-			
+
 			// https://bugzilla.mozilla.org/show_bug.cgi?id=518581
 			inbox.addMessageCountListener(new NixMessageCountListener(
 					currentUser, dataAccess));
 
 			try {
+				// mark user as nix-enabled
+				dataAccess.notifyNixListening();
+				
+				// start listening
 				startKeepAliveListener((IMAPFolder) inbox, currentUser);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -355,7 +361,7 @@ public class OAuth2Authenticator {
 	public static void startKeepAliveListener(IMAPFolder imapFolder,
 			User currentUser) throws MessagingException {
 		// We need to create a new thread to keep alive the connection
-		Thread t = new Thread(new KeepAliveRunnable(imapFolder, currentUser),
+		Thread t = new Thread(new KeepAliveRunnable(imapFolder),
 				"IdleConnectionKeepAlive");
 
 		t.start();
@@ -392,20 +398,16 @@ public class OAuth2Authenticator {
 
 		private IMAPFolder folder;
 
-		private User currentUser;
-
-		public KeepAliveRunnable(IMAPFolder folder, User currentUser) {
+		public KeepAliveRunnable(IMAPFolder folder) {
 			this.folder = folder;
-			this.currentUser = currentUser;
 		}
 
 		@Override
 		public void run() {
 			while (!Thread.interrupted()) {
 				try {
-					dataAccess.touchUser();
 					Thread.sleep(KEEP_ALIVE_FREQ);
-					
+
 					// Perform a NOOP just to keep alive the connection
 					System.out
 							.println("Performing a NOOP to keep alvie the connection");
@@ -419,18 +421,12 @@ public class OAuth2Authenticator {
 				} catch (InterruptedException e) {
 					// Ignore, just aborting the thread...
 				} catch (FolderClosedException ex) {
-					ex.printStackTrace();
 					try {
-						final GmailSSLStore imapStore = connect(currentUser);
-						folder = resolveFolder(imapStore);
-						if (!folder.isOpen()) {
-							folder.open(Folder.READ_ONLY);
-						}
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
+						dataAccess.notifyNixDown();
+					} catch (ParseException e) {
+						// TODO exit and alert in a different way?
 						e.printStackTrace();
 					}
-
 				} catch (MessagingException e) {
 					// Shouldn't really happen...
 					System.out

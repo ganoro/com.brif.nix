@@ -268,17 +268,6 @@ public class DataAccess {
 		user.updateInBackground();
 	}
 
-	public void touchUser() {
-		final User u = this.getUser();
-		if (u == null) {
-			return;
-		}
-
-		ParseObject user = new ParseObject(USERS_SCHEMA);
-		user.setObjectId(u.objectId);
-		user.updateInBackground();
-	}
-
 	public void removeMessage(final String userObjectId, final long uid) {
 		ParseObject parseMessage = new ParseObject(
 				getMsgTableByUser(userObjectId));
@@ -360,5 +349,25 @@ public class DataAccess {
 
 		System.out.println("User enabled");
 
+	}
+
+	public void notifyNixListening() throws ParseException {
+		final User u = this.getUser();
+		if (u != null) {
+			ParseObject user = new ParseObject(USERS_SCHEMA);
+			user.setObjectId(u.objectId);
+			user.put("nixer_status", "listening");
+			user.updateInBackground();
+		}
+	}
+	
+	public void notifyNixDown() throws ParseException {
+		final User u = this.getUser();
+		if (u != null) {
+			ParseObject user = new ParseObject(USERS_SCHEMA);
+			user.setObjectId(u.objectId);
+			user.put("nixer_status", "down");
+			user.update();
+		}
 	}
 }
