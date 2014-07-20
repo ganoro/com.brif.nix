@@ -370,4 +370,15 @@ public class DataAccess {
 			user.update();
 		}
 	}
+	
+
+	public void notifyNixIgnore() throws ParseException {
+		final User u = this.getUser();
+		if (u != null) {
+			ParseObject user = new ParseObject(USERS_SCHEMA);
+			user.setObjectId(u.objectId);;
+			user.put("nixer_status", "ignore");
+			user.update();
+		}
+	}	
 }

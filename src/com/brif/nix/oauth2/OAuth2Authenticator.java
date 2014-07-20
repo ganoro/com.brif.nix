@@ -339,10 +339,14 @@ public class OAuth2Authenticator {
 			try {
 				imapStore = connectToImap("imap.gmail.com", 993,
 						currentUser.email, currentUser.access_token, debug);
-			} catch (Exception e1) {
+			} catch (AuthenticationFailedException e1) {
+				dataAccess.notifyNixIgnore();
 				System.out.println(e1.getMessage());
 				throw e1;
 				// TODO: invalid grant - application revoked???
+			} catch (Exception e2) {
+				System.out.println(e2.getMessage());
+				throw e2;
 			}
 		}
 		return imapStore;
