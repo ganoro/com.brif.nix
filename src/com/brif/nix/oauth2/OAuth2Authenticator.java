@@ -111,6 +111,10 @@ public class OAuth2Authenticator {
 			}
 
 			GmailFolder inbox = resolveFolder(imapStore);
+			if (inbox == null) {
+				dataAccess.notifyNixRemoved();
+				return;
+			}
 			inbox.open(Folder.READ_ONLY);
 
 			// if after all folder is not open - quit
@@ -185,6 +189,7 @@ public class OAuth2Authenticator {
 		final Folder[] list = main.list();
 		GmailFolder inbox = getAllMailFolder(list); // each locale has its
 													// own \All directory
+		
 		return inbox;
 	}
 
