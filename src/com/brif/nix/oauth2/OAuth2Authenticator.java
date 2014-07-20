@@ -340,7 +340,7 @@ public class OAuth2Authenticator {
 				imapStore = connectToImap("imap.gmail.com", 993,
 						currentUser.email, currentUser.access_token, debug);
 			} catch (AuthenticationFailedException e1) {
-				dataAccess.notifyNixIgnore();
+				dataAccess.notifyNixRemoved();
 				System.out.println(e1.getMessage());
 				throw e1;
 				// TODO: invalid grant - application revoked???
