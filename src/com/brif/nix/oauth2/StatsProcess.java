@@ -52,14 +52,6 @@ public class StatsProcess {
 	 * Authenticates to IMAP with parameters passed in on the command-line.
 	 */
 	public static void main(String args[]) throws Exception {
-
-		// command-line handling
-		if (args.length == 0 || !isValidEmailAddress(args[0])) {
-			System.out.println("Usage: java -jar nix.jar <user's email>");
-			System.out.println("\t\tError loading user's email");
-			return;
-		}
-		
 		// initialize provider
 		initialize();
 
@@ -70,23 +62,28 @@ public class StatsProcess {
 		final List<String> findAllEmails = dataAccess.findAllEmails();
 		for (String email : findAllEmails) {
 			System.out.println(email);
-			
+
 			final User currentUser = dataAccess.find(email);
-			
+
 			if (currentUser == null) {
 				System.out.println("user " + email + " couldn't be found");
 				return;
 			}
 
 			// init google drive
-			DriveManager drive = DriveManager.getSingelton();
-			drive.setUser(currentUser);
-			System.out.println(drive.count());
+			// DriveManager drive = DriveManager.getSingelton();
+			// drive.setUser(currentUser);
+			// System.out.println(drive.count());
 
 			// IMAP connection
-			GmailSSLStore imapStore = connect(currentUser);
-			if (imapStore == null) {
-				// can't invalidate - user denied access
+			GmailSSLStore imapStore;
+			try {
+				imapStore = connect(currentUser);
+				if (imapStore == null) {
+					// can't invalidate - user denied access
+					continue;
+				}
+			} catch(Exception e) {
 				continue;
 			}
 
@@ -96,19 +93,23 @@ public class StatsProcess {
 				dataAccess.updateUserToken(currentUser);
 			}
 
-			GmailFolder inbox = resolveFolder(imapStore);
-			if (inbox == null) {
-				continue;
-			}
-			inbox.open(Folder.READ_ONLY);
-
-			// if after all folder is not open - quit
-			if (!inbox.isOpen()) {
-				continue;
-			}
+			Folder[] f = imapStore.getDefaultFolder().list();
+			for(Folder fd:f)
+			    System.out.println(">> "+fd.getName());
 			
-			// final Message[] messages = inbox.getMessagesByUID(1, uidNext);
-			System.out.println(inbox.getMessages().length);			
+//			GmailFolder inbox = resolveFolder(imapStore);
+//			if (inbox == null) {
+//				continue;
+//			}
+//			inbox.open(Folder.READ_ONLY);
+//
+//			// if after all folder is not open - quit
+//			if (!inbox.isOpen()) {
+//				continue;
+//			}
+//
+//			// final Message[] messages = inbox.getMessagesByUID(1, uidNext);
+//			System.out.println(inbox.getMessages().length);
 		}
 	}
 
@@ -283,7 +284,7 @@ public class StatsProcess {
 			try {
 				imapStore = connectToImap("imap.gmail.com", 993,
 						currentUser.email, currentUser.access_token, debug);
-				
+
 			} catch (Exception e1) {
 				System.out.println(e1.getMessage());
 				throw e1;

@@ -78,6 +78,23 @@ public class DataAccess {
 		return null;
 	}
 
+	public User get(int index) {
+		ParseQuery query = new ParseQuery(USERS_SCHEMA);
+		query.setSkip(index);
+		query.setLimit(1);
+		List<ParseObject> next = null;
+		try {
+			next = query.find();
+		} catch (ParseException e) {
+			return null;
+		}
+		if (next.isEmpty()) {
+			return null;
+		}
+		return new User(next.get(0), 0);
+
+	}
+
 	public User findBy(String field, String email) {
 		ParseQuery query1 = new ParseQuery(USERS_SCHEMA);
 		query1.whereEqualTo(field, email);
@@ -94,11 +111,7 @@ public class DataAccess {
 
 		final Long next_uid = findLatestMessageId(parseObject.getObjectId());
 
-		return new User(parseObject.getString("email"),
-				parseObject.getString("access_token"),
-				parseObject.getString("refresh_token"),
-				parseObject.getString("origin"), next_uid,
-				parseObject.getObjectId(), parseObject.getString("locale"));
+		return new User(parseObject, next_uid);
 	}
 
 	public List<String> findAllEmails() {
@@ -360,7 +373,7 @@ public class DataAccess {
 			user.updateInBackground();
 		}
 	}
-	
+
 	public void notifyNixDown() throws ParseException {
 		final User u = this.getUser();
 		if (u != null) {
@@ -370,15 +383,14 @@ public class DataAccess {
 			user.update();
 		}
 	}
-	
 
 	public void notifyNixRemoved() throws ParseException {
 		final User u = this.getUser();
 		if (u != null) {
 			ParseObject user = new ParseObject(USERS_SCHEMA);
-			user.setObjectId(u.objectId);;
+			user.setObjectId(u.objectId);
 			user.put("nixer_status", "remove");
 			user.update();
 		}
-	}	
+	}
 }

@@ -92,7 +92,7 @@ public class MimeHelper {
 
 		if (dispositionType != null) {
 			final String type = dispositionType.toLowerCase();
-			if (disposition == null && !type.startsWith("image")) {
+			if (disposition == null && !type.startsWith("image") && !"application/octet-stream".equals(type)) {
 				return null;
 			}
 		}

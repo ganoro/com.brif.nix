@@ -127,6 +127,7 @@ public class OAuth2Authenticator {
 			long min = Math.max(currentUser.next_uid + 1, uidNext - 2000);
 
 			final Message[] messages = inbox.getMessagesByUID(min, uidNext);
+			
 			for (int i = messages.length - 1; i >= 0; i--) {
 				Message message = messages[i];
 				MessageParser mp = new MessageParser(message, currentUser);
@@ -312,20 +313,9 @@ public class OAuth2Authenticator {
 			if (response.getRefreshToken() != null) {
 				currentUser.refresh_token = response.getRefreshToken();
 			}
-		} catch (TokenResponseException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			if (e.getDetails() != null) {
-				System.err.println("Error: " + e.getDetails().getError());
-				if (e.getDetails().getErrorDescription() != null) {
-					System.err.println(e.getDetails().getErrorDescription());
-				}
-				if (e.getDetails().getErrorUri() != null) {
-					System.err.println(e.getDetails().getErrorUri());
-				}
-			} else {
-				// TODO Auto-generated catch block
-				System.err.println(e.getMessage());
-			}
+			System.err.println(e.getMessage());
 		}
 	}
 
