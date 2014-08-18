@@ -17,14 +17,13 @@ import javax.mail.MessagingException;
 import javax.mail.Session;
 
 import com.brif.nix.gdrive.DriveManager;
-import com.brif.nix.listeners.NixMessageCountListener;
+import com.brif.nix.listeners.AllMessageListener;
 import com.brif.nix.model.DataAccess;
 import com.brif.nix.model.User;
 import com.brif.nix.notifications.SapiNotificationsHandler;
 import com.brif.nix.parse.ParseException;
 import com.brif.nix.parser.MessageParser;
 import com.google.api.client.auth.oauth2.TokenResponse;
-import com.google.api.client.auth.oauth2.TokenResponseException;
 import com.google.api.client.googleapis.auth.oauth2.GoogleRefreshTokenRequest;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
@@ -83,7 +82,7 @@ public class OAuth2Authenticator {
 			logStatus();
 
 			dataAccess = new DataAccess(first_argument);
-			User currentUser = dataAccess.getUser();
+			final User currentUser = dataAccess.getUser();
 			if (currentUser == null) {
 				System.out.println("user " + first_argument
 						+ " couldn't be found");
@@ -110,24 +109,24 @@ public class OAuth2Authenticator {
 				dataAccess.updateUserToken(currentUser);
 			}
 
-			GmailFolder inbox = resolveFolder(imapStore);
-			if (inbox == null) {
+			final GmailFolder allFolder = resolveFolder(imapStore);
+			if (allFolder == null) {
 				dataAccess.notifyNixRemoved();
 				return;
 			}
-			inbox.open(Folder.READ_ONLY);
+			allFolder.open(Folder.READ_ONLY);
 
 			// if after all folder is not open - quit
-			if (!inbox.isOpen()) {
+			if (!allFolder.isOpen()) {
 				throw new Exception("Folder does not open correctly.");
 			}
 
 			// TODO map reduce ?
-			final long uidNext = inbox.getUIDNext();
+			final long uidNext = allFolder.getUIDNext();
 			long min = Math.max(currentUser.next_uid + 1, uidNext - 2000);
 
-			final Message[] messages = inbox.getMessagesByUID(min, uidNext);
-			
+			final Message[] messages = allFolder.getMessagesByUID(min, uidNext);
+
 			for (int i = messages.length - 1; i >= 0; i--) {
 				Message message = messages[i];
 				MessageParser mp = new MessageParser(message, currentUser);
@@ -140,7 +139,7 @@ public class OAuth2Authenticator {
 						&& !mp.isAfter(anchorTime)) {
 					break;
 				}
-				if (!mp.isDraft()) {
+				if (mp.shouldBeProcessed()) {
 					System.out.println("Adding message: " + mp.getMessageId());
 					dataAccess.addMessage(currentUser, mp);
 				}
@@ -157,15 +156,15 @@ public class OAuth2Authenticator {
 			dataAccess.setUser(currentUser);
 
 			// https://bugzilla.mozilla.org/show_bug.cgi?id=518581
-			inbox.addMessageCountListener(new NixMessageCountListener(
+			allFolder.addMessageCountListener(new AllMessageListener(
 					currentUser, dataAccess));
 
 			try {
 				// mark user as nix-enabled
 				dataAccess.notifyNixListening();
-				
+
 				// start listening
-				startKeepAliveListener((IMAPFolder) inbox, currentUser);
+				startKeepAliveListener(allFolder, currentUser);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -190,7 +189,6 @@ public class OAuth2Authenticator {
 		final Folder[] list = main.list();
 		GmailFolder inbox = getAllMailFolder(list); // each locale has its
 													// own \All directory
-		
 		return inbox;
 	}
 
@@ -214,6 +212,25 @@ public class OAuth2Authenticator {
 			}
 		}
 		throw new Exception("Cannot find [Gmail] folder");
+	}
+
+	/**
+	 * People can do crazy thing with their folder structure - find it!
+	 * 
+	 * @param imapStore
+	 * @return
+	 * @throws Exception
+	 */
+	protected static GmailFolder resolveInbox(GmailSSLStore imapStore)
+			throws Exception {
+		return (GmailFolder) imapStore.getFolder("INBOX");
+		// final Folder[] list = imapStore.getDefaultFolder().list();
+		// for (Folder folder : list) {
+		// if ("inbox".equalsIgnoreCase(folder.getName())) {
+		// return (GmailFolder) folder;
+		// }
+		// }
+		// return null;
 	}
 
 	private static GmailFolder getAllMailFolder(Folder[] list) {
@@ -366,8 +383,8 @@ public class OAuth2Authenticator {
 		t.start();
 
 		while (!Thread.interrupted()) {
-			System.out.println("Starting IDLE");
 			try {
+				System.out.println("Starting IDLE " + imapFolder.getName());
 				imapFolder.idle();
 			} catch (MessagingException e) {
 				final String message = e.getMessage();
@@ -375,7 +392,6 @@ public class OAuth2Authenticator {
 				if (message != null) {
 					System.out.println(message);
 				}
-
 				throw e;
 			}
 		}
@@ -397,8 +413,8 @@ public class OAuth2Authenticator {
 
 		private IMAPFolder folder;
 
-		public KeepAliveRunnable(IMAPFolder folder) {
-			this.folder = folder;
+		public KeepAliveRunnable(IMAPFolder imapFolder) {
+			this.folder = imapFolder;
 		}
 
 		@Override

@@ -59,7 +59,7 @@ public class MessageParser {
 
 	private String intro = null;
 
-	private static final Address[] emptyAddress = new Address[0];;
+	private static final Address[] emptyAddress = new Address[0];
 
 	static {
 		fp.add(FetchProfileItem.CONTENT_INFO);
@@ -128,13 +128,33 @@ public class MessageParser {
 		return this.message.getLabels();
 	}
 
+	public boolean hasNotArchived() throws MessagingException {
+		final String[] labels = this.getLabels();
+		for (String label : labels) {
+			if ("\\Inbox".equals(label)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public boolean isSeen() throws MessagingException {
 		return message.isSet(Flags.Flag.SEEN);
 	}
 
-	public boolean isDraft() throws MessagingException {
+	public boolean shouldBeProcessed() throws MessagingException {
+		//  && (this.isSentByMe() || this.hasNotArchived())
+		return !this.isDraft();  
+	}
+
+	protected boolean isDraft() throws MessagingException {
 		final String[] labels = message.getLabels();
-		return labels.length > 0 && "\\Draft".equals(labels[0]);
+		return labels.length == 1 && "\\Draft".equals(labels[0]);
+	}
+
+	protected boolean isSentByMe() throws MessagingException {
+		final String[] sender = this.getSender();
+		return sender != null && sender[0].equalsIgnoreCase(user.email);
 	}
 
 	public String getSubject() throws MessagingException {

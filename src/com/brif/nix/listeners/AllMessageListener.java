@@ -14,12 +14,12 @@ import com.brif.nix.model.DataAccess;
 import com.brif.nix.model.User;
 import com.brif.nix.parser.MessageParser;
 
-public class NixMessageCountListener implements MessageCountListener {
+public class AllMessageListener implements MessageCountListener {
 
 	private final User currentUser;
 	private DataAccess dataAccess;
 
-	public NixMessageCountListener(User currentUser, DataAccess dataAccess) {
+	public AllMessageListener(User currentUser, DataAccess dataAccess) {
 		this.currentUser = currentUser;
 		this.dataAccess = dataAccess;
 	}
@@ -42,19 +42,17 @@ public class NixMessageCountListener implements MessageCountListener {
 		for (Message message : messages) {
 			try {
 				final int messageNumber = message.getMessageNumber();
-
 				System.out.println(getTime() + "adding message ("
 						+ messageNumber + ")");
 
 				if (message.isExpunged()) {
 					continue;
 				}
-				
+
 				MessageParser mp = new MessageParser(message, currentUser);
-				if (!mp.isDraft()) {
+				if (mp.shouldBeProcessed()) {
 					dataAccess.addMessage(currentUser, mp);
 				}
-
 				System.out.println(getTime() + "message added ("
 						+ messageNumber + ")");
 
