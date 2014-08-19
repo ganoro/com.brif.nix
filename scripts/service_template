@@ -12,6 +12,13 @@ case $1 in
             echo "$SERVICE_NAME is already running ..."
         fi
     ;;
+	status)
+        if [ -f $PID_PATH_NAME ]; then
+            echo "OK"
+        else
+            echo "FAILED"
+        fi
+    ;;    
     stop)
         if [ -f $PID_PATH_NAME ]; then
             PID=$(cat $PID_PATH_NAME);
