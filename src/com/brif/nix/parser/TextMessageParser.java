@@ -57,7 +57,9 @@ public class TextMessageParser implements IMimePraser {
 					}
 					
 					if (doc.text().trim().length() != 0) {
-						return doc.outerHtml();
+						final String h = doc.outerHtml();
+						doc = null;
+						return h;
 					} else {
 						return "";
 					}
@@ -206,6 +208,7 @@ public class TextMessageParser implements IMimePraser {
 							charset, "");
 					
 					s = doc.text().trim();
+					doc = null;
 				} else {
 					s = (String) this.content;
 				}
