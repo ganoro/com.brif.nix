@@ -26,8 +26,8 @@ import java.io.OutputStream;
 
 import javax.mail.MessagingException;
 
+import org.apache.commons.codec.binary.Base64OutputStream;
 import org.apache.commons.io.IOUtils;
-import org.apache.james.mime4j.codec.Base64OutputStream;
 
 /**
  * A Body that is backed by a temp file. The Body exposes a getOutputStream

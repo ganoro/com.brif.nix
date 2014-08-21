@@ -123,7 +123,7 @@ public class OAuth2Authenticator {
 
 			// TODO map reduce ?
 			final long uidNext = allFolder.getUIDNext();
-			long min = Math.max(currentUser.next_uid + 1, uidNext - 2000);
+			long min = Math.max(currentUser.next_uid + 1, uidNext - 4000);
 
 			final Message[] messages = allFolder.getMessagesByUID(min, uidNext);
 

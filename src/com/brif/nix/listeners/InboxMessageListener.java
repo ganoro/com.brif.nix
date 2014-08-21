@@ -9,8 +9,8 @@ import com.brif.nix.model.User;
 
 public class InboxMessageListener implements MessageCountListener {
 
-	private User currentUser;
-	private DataAccess dataAccess;
+	protected User currentUser;
+	protected DataAccess dataAccess;
 
 	public InboxMessageListener(User currentUser, DataAccess dataAccess) {
 		this.currentUser = currentUser;
