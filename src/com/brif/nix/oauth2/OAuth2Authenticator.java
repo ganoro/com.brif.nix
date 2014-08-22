@@ -224,13 +224,7 @@ public class OAuth2Authenticator {
 	protected static GmailFolder resolveInbox(GmailSSLStore imapStore)
 			throws Exception {
 		return (GmailFolder) imapStore.getFolder("INBOX");
-		// final Folder[] list = imapStore.getDefaultFolder().list();
-		// for (Folder folder : list) {
-		// if ("inbox".equalsIgnoreCase(folder.getName())) {
-		// return (GmailFolder) folder;
-		// }
-		// }
-		// return null;
+
 	}
 
 	private static GmailFolder getAllMailFolder(Folder[] list) {
@@ -297,6 +291,7 @@ public class OAuth2Authenticator {
 		props.put("mail.store.protocol", "gimaps");
 		props.put("mail.gimaps.sasl.enable", "true");
 		props.put("mail.gimaps.sasl.mechanisms", "XOAUTH2");
+		
 		props.put(OAuth2SaslClientFactory.OAUTH_TOKEN_PROP, oauthToken);
 
 		Session session = Session.getDefaultInstance(props, null);
