@@ -20,10 +20,12 @@ case $1 in
 			   echo "OK"
 			else
 				echo "FAILED"
+	            rm $PID_PATH_NAME
 		        exit 1
 			fi
         else
             echo "FAILED"
+            rm $PID_PATH_NAME
 	        exit 1
         fi
     ;;
