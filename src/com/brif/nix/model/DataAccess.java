@@ -385,6 +385,7 @@ public class DataAccess {
 	}
 
 	public void notifyNixRemoved() throws ParseException {
+		System.out.println("account deactivated");
 		final User u = this.getUser();
 		if (u != null) {
 			ParseObject user = new ParseObject(USERS_SCHEMA);

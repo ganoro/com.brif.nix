@@ -211,7 +211,7 @@ public class OAuth2Authenticator {
 				}
 			}
 		}
-		throw new Exception("Cannot find [Gmail] folder");
+		return (GmailFolder) list[0];
 	}
 
 	/**
