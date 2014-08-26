@@ -12,3 +12,5 @@ curl -X PUT \
   -H "Content-Type: application/json" \
   -d '{"free_spots":{"__op":"Increment","amount":1}}' \
   https://api.parse.com/1/classes/Nixers/$NIXER_ID
+
+gsutil cp /var/log/$1.boostrapper.log gs://setup-user-logs/$1.boostrapper.log  
