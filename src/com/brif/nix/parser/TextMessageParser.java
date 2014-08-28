@@ -28,10 +28,12 @@ public class TextMessageParser implements IMimePraser {
 	private static final String DEFAULT_CHARSET = "UTF-8";
 	private String charset;
 	private String unsubscribe = null;
+	private MessageParser mp;
 
-	public TextMessageParser(Object content2, Part message) {
+	public TextMessageParser(Object content2, Part message, MessageParser mp) {
 		this.content = content2;
 		this.message = message;
+		this.mp = mp;
 	}
 
 	public String getContent() {
@@ -129,11 +131,11 @@ public class TextMessageParser implements IMimePraser {
 		return false;
 	}
 
-	protected static boolean removeIOS(Document doc) {
+	protected boolean removeIOS(Document doc) {
 		final Elements select = doc.select("blockquote");
 		if (select.size() > 0) {
-			final int size = select.get(0).siblingElements().size();
-			if (size > 1) {
+			final MessageParser mp = this.getMessageParser();
+			if (mp.isIOS()) {
 				final Node previousSibling = select.get(0).previousSibling();
 				if (previousSibling != null) {
 					previousSibling.remove();
@@ -241,6 +243,11 @@ public class TextMessageParser implements IMimePraser {
 		    }
 		}
 		return 0;
+	}
+
+	@Override
+	public MessageParser getMessageParser() {
+		return mp;
 	}
 	
 	

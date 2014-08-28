@@ -6,8 +6,8 @@ import javax.mail.internet.MimeMultipart;
 
 public class MixedContentParser extends MultiPartParser {
 
-	public MixedContentParser(MimeMultipart body) {
-		super(body);
+	public MixedContentParser(MimeMultipart body, MessageParser mp) {
+		super(body, mp);
 	}
 
 	public String getContent() {
@@ -16,7 +16,7 @@ public class MixedContentParser extends MultiPartParser {
 			for (int i = 0; i < body.getCount(); i++) {
 				final BodyPart bodyPart = body.getBodyPart(i);
 				final IMimePraser parser = MimeParserFactory
-						.getParser(bodyPart);
+						.getParser(bodyPart, this.getMessageParser());
 				final String content = parser.getContent();
 				sb.append(content);
 			}
@@ -40,7 +40,7 @@ public class MixedContentParser extends MultiPartParser {
 			for (int i = 0; i < body.getCount(); i++) {
 				final BodyPart bodyPart = body.getBodyPart(i);
 				final IMimePraser parser = MimeParserFactory
-						.getParser(bodyPart);
+						.getParser(bodyPart, this.getMessageParser());
 				final String content = parser.getIntro();
 				if (content != null) {
 					sb.append(content);	

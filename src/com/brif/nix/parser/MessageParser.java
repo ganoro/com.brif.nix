@@ -117,7 +117,7 @@ public class MessageParser {
 			e.printStackTrace();
 		}
 
-		parser = MimeParserFactory.getParser(message);
+		parser = MimeParserFactory.getParser(message, this);
 	}
 
 	public GmailFolder getFolder() {
@@ -174,6 +174,16 @@ public class MessageParser {
 		final String header = this.message.getHeader("List-Unsubscribe", null);
 		this.unsubscribe = header;
 		return this.unsubscribe;
+	}
+	
+	public boolean isIOS() {
+		String header;
+		try {
+			header = this.message.getHeader("X-Mailer", null);
+		} catch (MessagingException e) {
+			return false;
+		}
+		return header != null && header.startsWith("iP");
 	}
 
 	private String getCharsetByHeader(final String rawvalue) {
@@ -345,7 +355,7 @@ public class MessageParser {
 	}
 
 	protected List<MessageAttachment> getAttachments() {
-		final IMimePraser parser = MimeParserFactory.getParser(message);
+		final IMimePraser parser = MimeParserFactory.getParser(message, this);
 		List<MessageAttachment> atts = new ArrayList<MessageAttachment>();
 		parser.collectAttachments(atts, getEmailAddress(this.message));
 		if (atts.size() == 0) {

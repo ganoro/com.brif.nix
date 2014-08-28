@@ -9,8 +9,8 @@ public class AlternativeContentParser extends MultiPartParser implements
 
 	private final IMimePraser proxyContent;
 
-	public AlternativeContentParser(MimeMultipart body) {
-		super(body);
+	public AlternativeContentParser(MimeMultipart body, MessageParser mp) {
+		super(body, mp);
 
 		// find the html and no_html parts
 		BodyPart no_html = null;
@@ -32,7 +32,7 @@ public class AlternativeContentParser extends MultiPartParser implements
 		}
 
 		proxyContent = MimeParserFactory.getParser(html != null ? html
-				: no_html);
+				: no_html, this.getMessageParser());
 	}
 
 	/**

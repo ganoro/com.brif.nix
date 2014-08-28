@@ -12,5 +12,6 @@ public interface IMimePraser {
 	
 	public String getMetadata(String key);
 	
+	public MessageParser getMessageParser();
 }
 

@@ -15,9 +15,11 @@ import com.brif.nix.parser.MessageParser.MessageAttachment;
 public abstract class MultiPartParser implements IMimePraser {
 
 	protected MimeMultipart body;
+	private MessageParser mp;
 
-	public MultiPartParser(MimeMultipart body) {
+	public MultiPartParser(MimeMultipart body, MessageParser mp) {
 		this.body = body;
+		this.mp = mp;
 	}
 
 	@Override
@@ -26,7 +28,7 @@ public abstract class MultiPartParser implements IMimePraser {
 			for (int i = 0; i < body.getCount(); i++) {
 				Part bp = body.getBodyPart(i);
 				if (bp.isMimeType("multipart/*")) {
-					final IMimePraser parser = MimeParserFactory.getParser(bp);
+					final IMimePraser parser = MimeParserFactory.getParser(bp, this.getMessageParser());
 					parser.collectAttachments(atts, from);
 				} else {
 					final MessageAttachment attachment = MimeHelper
@@ -65,6 +67,11 @@ public abstract class MultiPartParser implements IMimePraser {
 		return "image/png".equalsIgnoreCase(dispositionType)
 				|| "image/jpg".equalsIgnoreCase(dispositionType)
 				|| "image/jpeg".equalsIgnoreCase(dispositionType);
+	}
+	
+	@Override
+	public MessageParser getMessageParser() {
+		return mp;
 	}
 
 }

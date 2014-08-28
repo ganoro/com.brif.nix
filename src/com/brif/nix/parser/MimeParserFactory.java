@@ -33,10 +33,15 @@ public class MimeParserFactory {
 				// TODO Auto-generated method stub
 				return null;
 			}
+
+			@Override
+			public MessageParser getMessageParser() {
+				return null;
+			}
 		};
 	}
 
-	public static IMimePraser getParser(Part message) {
+	public static IMimePraser getParser(Part message, MessageParser messageParser) {
 		if (message == null) {
 			return theEmptyParser;
 		}
@@ -51,13 +56,13 @@ public class MimeParserFactory {
 			}
 
 			if (message.isMimeType("text/*")) {
-				result = new TextMessageParser(content, message);
+				result = new TextMessageParser(content, message, messageParser);
 			} else if (message.isMimeType("multipart/alternative")) {
-				result = new AlternativeContentParser((MimeMultipart) content);
+				result = new AlternativeContentParser((MimeMultipart) content, messageParser);
 			} else if (message.isMimeType("multipart/mixed")) {
-				result = new MixedContentParser((MimeMultipart) content);
+				result = new MixedContentParser((MimeMultipart) content, messageParser);
 			} else if (message.isMimeType("multipart/related")) {
-				result = new RelatedContentParser((MimeMultipart) content);
+				result = new RelatedContentParser((MimeMultipart) content, messageParser);
 			} else {
 				result = theEmptyParser;
 			}
