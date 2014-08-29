@@ -57,7 +57,7 @@ public class TextMessageParser implements IMimePraser {
 					if (href != null && !href.isEmpty()) {
 						unsubscribe = getUnsubscribeLinks(href);
 					}
-					
+
 					if (doc.text().trim().length() != 0) {
 						final String h = doc.outerHtml();
 						doc = null;
@@ -123,12 +123,20 @@ public class TextMessageParser implements IMimePraser {
 	}
 
 	protected boolean removeGmail(Document doc) {
-		if (this.getMessageParser().isInReplyTo()) {
-			final Elements select = doc.select(".gmail_quote");
-			if (select.size() > 0) {
-				select.remove();
-				return true;
-			}
+		String subject = null;
+		try {
+			subject = this.getMessageParser().getSubject();
+		} catch (MessagingException e) {
+		}
+
+		if (subject != null && subject.startsWith("Fwd")) {
+			return false;
+		}
+		
+		final Elements select = doc.select(".gmail_quote");
+		if (select.size() > 0) {
+			select.remove();
+			return true;
 		}
 		return false;
 	}
@@ -213,7 +221,7 @@ public class TextMessageParser implements IMimePraser {
 					String charset = getMessageCharset(message);
 					Document doc = Jsoup.parse(message.getInputStream(),
 							charset, "");
-					
+
 					s = doc.text().trim();
 					doc = null;
 				} else {
@@ -240,9 +248,9 @@ public class TextMessageParser implements IMimePraser {
 
 	private int getFirstNonWhitespace(String s) {
 		for (int i = 0; i < s.length(); i++) {
-		    if (!Character.isWhitespace(s.charAt(i))) {
-		        return i;
-		    }
+			if (!Character.isWhitespace(s.charAt(i))) {
+				return i;
+			}
 		}
 		return 0;
 	}
@@ -251,6 +259,5 @@ public class TextMessageParser implements IMimePraser {
 	public MessageParser getMessageParser() {
 		return mp;
 	}
-	
-	
+
 }
