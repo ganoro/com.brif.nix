@@ -122,11 +122,13 @@ public class TextMessageParser implements IMimePraser {
 		return;
 	}
 
-	protected static boolean removeGmail(Document doc) {
-		final Elements select = doc.select(".gmail_quote");
-		if (select.size() > 0) {
-			select.remove();
-			return true;
+	protected boolean removeGmail(Document doc) {
+		if (this.getMessageParser().isInReplyTo()) {
+			final Elements select = doc.select(".gmail_quote");
+			if (select.size() > 0) {
+				select.remove();
+				return true;
+			}
 		}
 		return false;
 	}

@@ -310,7 +310,15 @@ public class MessageParser {
 			return false;
 		}
 	}
-
+	
+	public boolean isInReplyTo() {
+		try {
+			return this.message.getHeader("In-Reply-To") != null;
+		} catch (MessagingException e) {
+			return false;
+		}
+	}
+	
 	public String getContent() throws IOException, MessagingException {
 		if (this.content != null) {
 			return this.content;
