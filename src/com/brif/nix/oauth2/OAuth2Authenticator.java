@@ -147,7 +147,6 @@ public class OAuth2Authenticator {
 
 			// if it is the user's setup process - quit here...
 			if (isSetupProcess) {
-				dataAccess.enableUser();
 				return;
 			}
 
