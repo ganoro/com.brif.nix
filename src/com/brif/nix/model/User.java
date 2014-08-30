@@ -7,6 +7,7 @@ public class User {
 	public User(String email, String access_token, String refresh_Token,
 			String origin, long nextUID, String objectId, String locale) {
 		super();
+		System.out.println(email);
 		this.email = email;
 		this.access_token = access_token;
 		this.refresh_token = refresh_Token;
