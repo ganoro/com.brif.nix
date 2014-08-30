@@ -210,31 +210,6 @@ public class DataAccess {
 		data.put("unseen", !mp.isSeen());
 		data.put("unique_id", mp.getBrifUniqueId());
 		notifyMessageAdded(currentUser, data);
-
-		// addLabels(mp);
-	}
-
-	private static final Pattern TAG_PATTERN = Pattern
-			.compile("(?:^|\\s|[\\p{Punct}&&[^/]])(#[\\p{L}0-9-_]+)");
-
-	private static void addLabels(MessageParser mp) {
-		String subject = "";
-		try {
-			subject = mp.getSubject();
-		} catch (MessagingException e) {
-			return;
-		}
-		final Matcher matcher = TAG_PATTERN.matcher(subject);
-		while (matcher.find()) {
-			try {
-				final LabelOperation labelOperation = new LabelOperation(
-						mp.getMessageNumber(), matcher.group());
-				mp.getFolder().doCommand(labelOperation);
-			} catch (MessagingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
 	}
 
 	private Map<String, Object> getMessageData(User currentUser,

@@ -116,6 +116,9 @@ public class OAuth2Authenticator {
 			}
 			allFolder.open(Folder.READ_ONLY);
 
+			final GmailFolder allFolderWrite = resolveFolder(imapStore);
+			allFolderWrite.open(Folder.READ_WRITE);
+
 			// if after all folder is not open - quit
 			if (!allFolder.isOpen()) {
 				throw new Exception("Folder does not open correctly.");
@@ -142,6 +145,7 @@ public class OAuth2Authenticator {
 				if (mp.shouldBeProcessed()) {
 					System.out.println("Adding message: " + mp.getMessageId());
 					dataAccess.addMessage(currentUser, mp);
+					mp.addLabels(allFolderWrite);
 				}
 			}
 
@@ -155,8 +159,9 @@ public class OAuth2Authenticator {
 			dataAccess.setUser(currentUser);
 
 			// https://bugzilla.mozilla.org/show_bug.cgi?id=518581
-			allFolder.addMessageCountListener(new AllMessageListener(
-					currentUser, dataAccess));
+			final AllMessageListener allMessageListener = new AllMessageListener(
+					currentUser, dataAccess, allFolderWrite);
+			allFolder.addMessageCountListener(allMessageListener);
 
 			try {
 				// mark user as nix-enabled
@@ -290,7 +295,7 @@ public class OAuth2Authenticator {
 		props.put("mail.store.protocol", "gimaps");
 		props.put("mail.gimaps.sasl.enable", "true");
 		props.put("mail.gimaps.sasl.mechanisms", "XOAUTH2");
-		
+
 		props.put(OAuth2SaslClientFactory.OAUTH_TOKEN_PROP, oauthToken);
 
 		Session session = Session.getDefaultInstance(props, null);

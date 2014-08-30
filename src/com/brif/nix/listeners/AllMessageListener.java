@@ -13,15 +13,18 @@ import javax.mail.event.MessageCountListener;
 import com.brif.nix.model.DataAccess;
 import com.brif.nix.model.User;
 import com.brif.nix.parser.MessageParser;
+import com.sun.mail.gimap.GmailFolder;
 
 public class AllMessageListener implements MessageCountListener {
 
 	private final User currentUser;
 	private DataAccess dataAccess;
+	private GmailFolder allFolderWrite;
 
-	public AllMessageListener(User currentUser, DataAccess dataAccess) {
+	public AllMessageListener(User currentUser, DataAccess dataAccess, GmailFolder allFolderWrite) {
 		this.currentUser = currentUser;
 		this.dataAccess = dataAccess;
+		this.allFolderWrite = allFolderWrite;
 	}
 
 	@Override
@@ -52,6 +55,7 @@ public class AllMessageListener implements MessageCountListener {
 				MessageParser mp = new MessageParser(message, currentUser);
 				if (mp.shouldBeProcessed()) {
 					dataAccess.addMessage(currentUser, mp);
+					mp.addLabels(allFolderWrite);
 				}
 				System.out.println(getTime() + "message added ("
 						+ messageNumber + ")");
