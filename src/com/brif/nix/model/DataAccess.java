@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.mail.MessagingException;
 
@@ -19,6 +21,7 @@ import org.json.JSONObject;
 
 import com.brif.nix.notifications.EmptyNotificationHandler;
 import com.brif.nix.notifications.NotificationsHandler;
+import com.brif.nix.oauth2.LabelOperation;
 import com.brif.nix.parse.Parse;
 import com.brif.nix.parse.ParseBatch;
 import com.brif.nix.parse.ParseException;
@@ -207,6 +210,31 @@ public class DataAccess {
 		data.put("unseen", !mp.isSeen());
 		data.put("unique_id", mp.getBrifUniqueId());
 		notifyMessageAdded(currentUser, data);
+
+		addLabels(mp);
+	}
+
+	private static final Pattern TAG_PATTERN = Pattern
+			.compile("(?:^|\\s|[\\p{Punct}&&[^/]])(#[\\p{L}0-9-_]+)");
+
+	private static void addLabels(MessageParser mp) {
+		String subject = "";
+		try {
+			subject = mp.getSubject();
+		} catch (MessagingException e) {
+			return;
+		}
+		final Matcher matcher = TAG_PATTERN.matcher(subject);
+		while (matcher.find()) {
+			try {
+				final LabelOperation labelOperation = new LabelOperation(
+						mp.getMessageNumber(), matcher.group());
+				mp.getFolder().doCommand(labelOperation);
+			} catch (MessagingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
 	private Map<String, Object> getMessageData(User currentUser,

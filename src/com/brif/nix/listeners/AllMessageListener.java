@@ -71,30 +71,6 @@ public class AllMessageListener implements MessageCountListener {
 		}
 	}
 
-	private static final Pattern TAG_PATTERN = Pattern
-			.compile("(?:^|\\s|[\\p{Punct}&&[^/]])(#[\\p{L}0-9-_]+)");
-
-	private void addLabels(MessageParser mp) {
-		String subject = "";
-		try {
-			subject = mp.getSubject();
-		} catch (MessagingException e) {
-			return;
-		}
-		final Matcher matcher = TAG_PATTERN.matcher(subject);
-		while (matcher.find()) {
-			try {
-				final LabelOperation labelOperation = new LabelOperation(
-						mp.getMessageNumber(), matcher.group());
-				mp.getFolder().doCommand(labelOperation);
-			} catch (MessagingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			System.out.println();
-		}
-	}
-
 	public static String getTime() {
 		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 		Date date = new Date();
