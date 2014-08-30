@@ -211,7 +211,7 @@ public class DataAccess {
 		data.put("unique_id", mp.getBrifUniqueId());
 		notifyMessageAdded(currentUser, data);
 
-		addLabels(mp);
+		// addLabels(mp);
 	}
 
 	private static final Pattern TAG_PATTERN = Pattern
