@@ -54,8 +54,8 @@ public class AllMessageListener implements MessageCountListener {
 
 				MessageParser mp = new MessageParser(message, currentUser);
 				if (mp.shouldBeProcessed()) {
-					dataAccess.addMessage(currentUser, mp);
 					mp.addLabels(allFolderWrite);
+					dataAccess.addMessage(currentUser, mp);
 				}
 				System.out.println(getTime() + "message added ("
 						+ messageNumber + ")");
