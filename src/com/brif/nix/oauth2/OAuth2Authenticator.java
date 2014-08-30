@@ -114,7 +114,7 @@ public class OAuth2Authenticator {
 				dataAccess.notifyNixRemoved();
 				return;
 			}
-			allFolder.open(Folder.READ_ONLY);
+			allFolder.open(Folder.READ_WRITE);
 
 			// if after all folder is not open - quit
 			if (!allFolder.isOpen()) {

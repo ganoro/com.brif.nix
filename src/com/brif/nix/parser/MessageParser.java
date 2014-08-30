@@ -206,6 +206,10 @@ public class MessageParser {
 		final GmailFolder folder = (GmailFolder) message.getFolder();
 		return folder.getUID(message);
 	}
+	
+	public int getMessageNumber() {
+		return this.message.getMessageNumber();
+	}
 
 	public long getGoogleThreadId() throws MessagingException {
 		return message.getThrId();

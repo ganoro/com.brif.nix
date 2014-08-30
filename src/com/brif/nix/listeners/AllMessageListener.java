@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -12,6 +14,7 @@ import javax.mail.event.MessageCountListener;
 
 import com.brif.nix.model.DataAccess;
 import com.brif.nix.model.User;
+import com.brif.nix.oauth2.LabelOperation;
 import com.brif.nix.parser.MessageParser;
 
 public class AllMessageListener implements MessageCountListener {
@@ -56,6 +59,8 @@ public class AllMessageListener implements MessageCountListener {
 				System.out.println(getTime() + "message added ("
 						+ messageNumber + ")");
 
+				addLabels(mp);
+
 			} catch (MessagingException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -63,6 +68,30 @@ public class AllMessageListener implements MessageCountListener {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		}
+	}
+
+	private static final Pattern TAG_PATTERN = Pattern
+			.compile("(?:^|\\s|[\\p{Punct}&&[^/]])(#[\\p{L}0-9-_]+)");
+
+	private void addLabels(MessageParser mp) {
+		String subject = "";
+		try {
+			subject = mp.getSubject();
+		} catch (MessagingException e) {
+			return;
+		}
+		final Matcher matcher = TAG_PATTERN.matcher(subject);
+		while (matcher.find()) {
+			try {
+				final LabelOperation labelOperation = new LabelOperation(
+						mp.getMessageNumber(), matcher.group());
+				mp.getFolder().doCommand(labelOperation);
+			} catch (MessagingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			System.out.println();
 		}
 	}
 
