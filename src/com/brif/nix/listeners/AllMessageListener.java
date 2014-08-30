@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -14,7 +12,6 @@ import javax.mail.event.MessageCountListener;
 
 import com.brif.nix.model.DataAccess;
 import com.brif.nix.model.User;
-import com.brif.nix.oauth2.LabelOperation;
 import com.brif.nix.parser.MessageParser;
 
 public class AllMessageListener implements MessageCountListener {
@@ -58,8 +55,6 @@ public class AllMessageListener implements MessageCountListener {
 				}
 				System.out.println(getTime() + "message added ("
 						+ messageNumber + ")");
-
-				addLabels(mp);
 
 			} catch (MessagingException e) {
 				// TODO Auto-generated catch block
