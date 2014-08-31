@@ -109,6 +109,9 @@ public class OAuth2Authenticator {
 				dataAccess.updateUserToken(currentUser);
 			}
 
+			final GmailFolder allFolderWrite = resolveFolder(imapStore);
+			allFolderWrite.open(Folder.READ_WRITE);
+			
 			final GmailFolder allFolder = resolveFolder(imapStore);
 			if (allFolder == null) {
 				dataAccess.notifyNixRemoved();
@@ -116,8 +119,6 @@ public class OAuth2Authenticator {
 			}
 			allFolder.open(Folder.READ_ONLY);
 
-			final GmailFolder allFolderWrite = resolveFolder(imapStore);
-			allFolderWrite.open(Folder.READ_WRITE);
 
 			// if after all folder is not open - quit
 			if (!allFolder.isOpen()) {

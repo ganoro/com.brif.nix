@@ -20,6 +20,7 @@ import javax.mail.Address;
 import javax.mail.BodyPart;
 import javax.mail.FetchProfile;
 import javax.mail.Flags;
+import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Part;
@@ -176,9 +177,13 @@ public class MessageParser {
 			try {
 				final LabelOperation labelOperation = new LabelOperation(
 						this.getMessageNumber(), matcher.group());
+				final boolean open = writeFolder.isOpen();
+				if (!open) {
+					writeFolder.open(Folder.READ_WRITE);
+				}
 				writeFolder.getMessage(this.getMessageNumber());
 				writeFolder.doCommand(labelOperation);
-			} catch (MessagingException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

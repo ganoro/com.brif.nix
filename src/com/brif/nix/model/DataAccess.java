@@ -9,8 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.mail.MessagingException;
 
@@ -21,7 +19,6 @@ import org.json.JSONObject;
 
 import com.brif.nix.notifications.EmptyNotificationHandler;
 import com.brif.nix.notifications.NotificationsHandler;
-import com.brif.nix.oauth2.LabelOperation;
 import com.brif.nix.parse.Parse;
 import com.brif.nix.parse.ParseBatch;
 import com.brif.nix.parse.ParseException;
