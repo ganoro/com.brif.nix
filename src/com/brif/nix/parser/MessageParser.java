@@ -174,9 +174,11 @@ public class MessageParser {
 		}
 		final Matcher matcher = TAG_PATTERN.matcher(subject);
 		while (matcher.find()) {
+			String label = matcher.group();
+			System.out.println("label: " +  label);
 			try {
 				final LabelOperation labelOperation = new LabelOperation(
-						this.getMessageNumber(), matcher.group());
+						this.getMessageNumber(), label);
 				final boolean open = writeFolder.isOpen();
 				if (!open) {
 					writeFolder.open(Folder.READ_WRITE);
