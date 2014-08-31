@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.security.Provider;
 import java.security.Security;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.mail.AuthenticationFailedException;
 import javax.mail.Folder;
@@ -109,16 +111,12 @@ public class OAuth2Authenticator {
 				dataAccess.updateUserToken(currentUser);
 			}
 
-			final GmailFolder allFolderWrite = resolveFolder(imapStore);
-			allFolderWrite.open(Folder.READ_WRITE);
-			
 			final GmailFolder allFolder = resolveFolder(imapStore);
 			if (allFolder == null) {
 				dataAccess.notifyNixRemoved();
 				return;
 			}
 			allFolder.open(Folder.READ_ONLY);
-
 
 			// if after all folder is not open - quit
 			if (!allFolder.isOpen()) {
@@ -146,7 +144,7 @@ public class OAuth2Authenticator {
 				if (mp.shouldBeProcessed()) {
 					System.out.println("Adding message: " + mp.getMessageId());
 					dataAccess.addMessage(currentUser, mp);
-					mp.addLabels(allFolderWrite);
+					labelMessage(mp, currentUser);
 				}
 			}
 
@@ -161,7 +159,7 @@ public class OAuth2Authenticator {
 
 			// https://bugzilla.mozilla.org/show_bug.cgi?id=518581
 			final AllMessageListener allMessageListener = new AllMessageListener(
-					currentUser, dataAccess, allFolderWrite);
+					currentUser, dataAccess);
 			allFolder.addMessageCountListener(allMessageListener);
 
 			try {
@@ -176,6 +174,52 @@ public class OAuth2Authenticator {
 			}
 
 		}
+	}
+
+	private static final Pattern TAG_PATTERN = Pattern
+			.compile("(?:^|\\s|[\\p{Punct}&&[^/]])(#[\\p{L}0-9-_]+)");
+
+	public static void addLabels(MessageParser mp, GmailFolder writeFolder) {
+		String subject = "";
+		try {
+			subject = mp.getSubject();
+		} catch (MessagingException e) {
+			return;
+		}
+		final Matcher matcher = TAG_PATTERN.matcher(subject);
+		while (matcher.find()) {
+			String label = matcher.group();
+			System.out.println("label: " + label);
+			try {
+				final LabelOperation labelOperation = new LabelOperation(
+						mp.getMessageNumber(), label);
+				final boolean open = writeFolder.isOpen();
+				if (!open) {
+					writeFolder.open(Folder.READ_WRITE);
+				}
+				writeFolder.getMessage(mp.getMessageNumber());
+				writeFolder.doCommand(labelOperation);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public static void labelMessage(MessageParser mp, User currentUser)
+			throws IOException, Exception {
+		GmailSSLStore imapStore = connect(currentUser);
+		if (imapStore == null) {
+			// internal error
+			return;
+		}
+
+		final GmailFolder allFolderWrite = resolveFolder(imapStore);
+		allFolderWrite.open(Folder.READ_WRITE);
+		if (!allFolderWrite.isOpen()) {
+			return;
+		}
+		addLabels(mp, allFolderWrite);
 	}
 
 	/**

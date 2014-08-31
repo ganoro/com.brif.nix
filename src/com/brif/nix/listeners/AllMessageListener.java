@@ -12,19 +12,17 @@ import javax.mail.event.MessageCountListener;
 
 import com.brif.nix.model.DataAccess;
 import com.brif.nix.model.User;
+import com.brif.nix.oauth2.OAuth2Authenticator;
 import com.brif.nix.parser.MessageParser;
-import com.sun.mail.gimap.GmailFolder;
 
 public class AllMessageListener implements MessageCountListener {
 
 	private final User currentUser;
 	private DataAccess dataAccess;
-	private GmailFolder allFolderWrite;
 
-	public AllMessageListener(User currentUser, DataAccess dataAccess, GmailFolder allFolderWrite) {
+	public AllMessageListener(User currentUser, DataAccess dataAccess) {
 		this.currentUser = currentUser;
 		this.dataAccess = dataAccess;
-		this.allFolderWrite = allFolderWrite;
 	}
 
 	@Override
@@ -54,7 +52,7 @@ public class AllMessageListener implements MessageCountListener {
 
 				MessageParser mp = new MessageParser(message, currentUser);
 				if (mp.shouldBeProcessed()) {
-					mp.addLabels(allFolderWrite);	
+					OAuth2Authenticator.labelMessage(mp, currentUser);
 					dataAccess.addMessage(currentUser, mp);
 				}
 				System.out.println(getTime() + "message added ("
@@ -64,6 +62,9 @@ public class AllMessageListener implements MessageCountListener {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

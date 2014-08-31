@@ -13,14 +13,11 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.mail.Address;
 import javax.mail.BodyPart;
 import javax.mail.FetchProfile;
 import javax.mail.Flags;
-import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Part;
@@ -36,7 +33,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.brif.nix.model.User;
-import com.brif.nix.oauth2.LabelOperation;
 import com.sun.mail.gimap.GmailFolder;
 import com.sun.mail.gimap.GmailFolder.FetchProfileItem;
 import com.sun.mail.gimap.GmailMessage;
@@ -161,37 +157,6 @@ public class MessageParser {
 		return sender != null && sender[0].equalsIgnoreCase(user.email);
 	}
 	
-
-	private static final Pattern TAG_PATTERN = Pattern
-			.compile("(?:^|\\s|[\\p{Punct}&&[^/]])(#[\\p{L}0-9-_]+)");
-
-	public void addLabels(GmailFolder writeFolder) {
-		String subject = "";
-		try {
-			subject = this.getSubject();
-		} catch (MessagingException e) {
-			return;
-		}
-		final Matcher matcher = TAG_PATTERN.matcher(subject);
-		while (matcher.find()) {
-			String label = matcher.group();
-			System.out.println("label: " +  label);
-			try {
-				final LabelOperation labelOperation = new LabelOperation(
-						this.getMessageNumber(), label);
-				final boolean open = writeFolder.isOpen();
-				if (!open) {
-					writeFolder.open(Folder.READ_WRITE);
-				}
-				writeFolder.getMessage(this.getMessageNumber());
-				writeFolder.doCommand(labelOperation);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	}	
-
 	public String getSubject() throws MessagingException {
 		if (this.subject != null) {
 			return this.subject;
