@@ -213,14 +213,17 @@ public class OAuth2Authenticator {
 			// internal error
 			return;
 		}
+		try {
+			final GmailFolder allFolderWrite = resolveFolder(imapStore);
+			allFolderWrite.open(Folder.READ_WRITE);
+			if (!allFolderWrite.isOpen()) {
+				return;
+			}
+			addLabels(mp, allFolderWrite);
+		} finally {
+			imapStore.close();
 
-		final GmailFolder allFolderWrite = resolveFolder(imapStore);
-		allFolderWrite.open(Folder.READ_WRITE);
-		if (!allFolderWrite.isOpen()) {
-			return;
 		}
-		addLabels(mp, allFolderWrite);
-		imapStore.close();
 	}
 
 	/**
