@@ -220,6 +220,7 @@ public class OAuth2Authenticator {
 			return;
 		}
 		addLabels(mp, allFolderWrite);
+		imapStore.close();
 	}
 
 	/**
