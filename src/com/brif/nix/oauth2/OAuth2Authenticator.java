@@ -191,13 +191,16 @@ public class OAuth2Authenticator {
 			String label = matcher.group();
 			System.out.println("label: " + label);
 			try {
+				final Message messageByUID = writeFolder.getMessageByUID(mp
+						.getMessageId());
+				final int messageNumber = messageByUID.getMessageNumber();
+
 				final LabelOperation labelOperation = new LabelOperation(
-						mp.getMessageNumber(), label);
+						messageNumber, label);
 				final boolean open = writeFolder.isOpen();
 				if (!open) {
 					writeFolder.open(Folder.READ_WRITE);
 				}
-				writeFolder.getMessage(mp.getMessageNumber());
 				writeFolder.doCommand(labelOperation);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
