@@ -27,7 +27,7 @@ public class LabelOperation implements IMAPFolder.ProtocolCommand {
 			return null;
 		}
 
-		trimmedLabel = "[Brif]/#" + trimmedLabel;		
+		trimmedLabel = "[Brif]/" + trimmedLabel;		
 		p.command(
 				"STORE " + msgNumber + " +X-GM-LABELS (" + trimmedLabel + ")",
 				null);
