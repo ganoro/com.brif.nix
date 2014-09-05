@@ -27,10 +27,7 @@ public class LabelOperation implements IMAPFolder.ProtocolCommand {
 			return null;
 		}
 
-		trimmedLabel = "[Brif]/#"
-				+ Character.toUpperCase(trimmedLabel.charAt(1))
-				+ (trimmedLabel.length() > 2 ? trimmedLabel.substring(2)
-						.toLowerCase() : "");
+		trimmedLabel = "[Brif]/#" + trimmedLabel;		
 		p.command(
 				"STORE " + msgNumber + " +X-GM-LABELS (" + trimmedLabel + ")",
 				null);
