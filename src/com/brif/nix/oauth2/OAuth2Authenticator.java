@@ -214,8 +214,7 @@ public class OAuth2Authenticator {
 
 	private static boolean aNumber(String label) {
 		for (int i = 1; i < label.length(); i++) {
-			final char c = label.charAt(i);
-			if (!Character.isDigit(c)) {
+			if (!Character.isDigit(label.charAt(i))) {
 				return false;
 			}
 		}
