@@ -189,6 +189,9 @@ public class OAuth2Authenticator {
 		final Matcher matcher = TAG_PATTERN.matcher(subject);
 		while (matcher.find()) {
 			String label = matcher.group();
+			if (aNumber(label)) {
+				continue;
+			}
 			System.out.println("label: " + label);
 			try {
 				final Message messageByUID = writeFolder.getMessageByUID(mp
@@ -207,6 +210,13 @@ public class OAuth2Authenticator {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	private static boolean aNumber(String label) {
+		for (int i = 0; i < label.length(); i++) {
+			
+		}
+		return false;
 	}
 
 	public static void labelMessage(MessageParser mp, User currentUser)
