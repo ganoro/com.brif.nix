@@ -188,7 +188,7 @@ public class OAuth2Authenticator {
 		}
 		final Matcher matcher = TAG_PATTERN.matcher(subject);
 		while (matcher.find()) {
-			String label = matcher.group();
+			String label = matcher.group().trim();
 			if (aNumber(label)) {
 				continue;
 			}
