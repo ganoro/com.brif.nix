@@ -224,10 +224,10 @@ public class OAuth2Authenticator {
 	public static void labelMessage(MessageParser mp, User currentUser)
 			throws IOException, Exception {
 
-		// only tag emails sent by brif
-		if (mp.getBrifUniqueId() == null) {
-			return;
-		}
+//		// only tag emails sent by brif
+//		if (mp.getBrifUniqueId() == null) {
+//			return;
+//		}
 		
 		GmailSSLStore imapStore = connect(currentUser);
 		if (imapStore == null) {
