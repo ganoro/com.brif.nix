@@ -36,6 +36,7 @@ public class ParseQuery {
 	private int mLimit = -1;
 	private int mSkip = 0;
 	private String mSelect = null;
+	private boolean mCount = false;
 
 	// query = key: [constraints]
 	// constraint = optional code : [value]
@@ -235,6 +236,50 @@ public class ParseQuery {
 	}
 
 	/**
+	 * Retrieves the count of the query
+	 * 
+	 * @return number of objects in query
+	 */
+	public int count() throws ParseException {
+		this.setCount(true);
+		try {
+			HttpClient httpclient = new DefaultHttpClient();
+			HttpGet httpget = new HttpGet(Parse.getParseAPIUrlClasses()
+					+ mClassName + getURLConstraints());
+			httpget.addHeader("X-Parse-Application-Id",
+					Parse.getApplicationId());
+			httpget.addHeader("X-Parse-REST-API-Key", Parse.getRestAPIKey());
+
+			HttpResponse httpResponse = httpclient.execute(httpget);
+			ParseResponse parseResponse = new ParseResponse(httpResponse);
+
+			if (parseResponse.isFailed()) {
+				throw parseResponse.getException();
+			}
+
+			JSONObject obj = parseResponse.getJsonObject();
+
+			if (obj == null) {
+				throw parseResponse.getException();
+			}
+
+			try {
+				return obj.getInt("count");
+			} catch (JSONException e) {
+				throw new ParseException(
+						ParseException.INVALID_JSON,
+						"Error parsing the array of results returned by query.",
+						e);
+			}
+		} catch (ClientProtocolException e) {
+			throw ParseResponse.getConnectionFailedException(e);
+		} catch (IOException e) {
+			throw ParseResponse.getConnectionFailedException(e);
+		}
+	}
+	
+	
+	/**
 	 * Add a constraint to the query that requires a particular key's value to
 	 * be equal to the provided value.
 	 * 
@@ -271,11 +316,16 @@ public class ParseQuery {
 	 */
 	private boolean hasConstraints() {
 		return hasWhereConstraints() || hasOrderConstraints()
-				|| hasLimitConstraints() || hasSkipConstraints();
+				|| hasLimitConstraints() || hasSkipConstraints()
+				|| hasCountConstraints();
 	}
 
 	private boolean hasLimitConstraints() {
 		return mLimit >= 0;
+	}
+
+	private boolean hasCountConstraints() {
+		return mCount;
 	}
 
 	private boolean hasWhereConstraints() {
@@ -350,6 +400,16 @@ public class ParseQuery {
 
 					url += URLEncoder.encode("limit=" + mLimit, "UTF-8");
 				}
+				
+				if (hasCountConstraints()) {
+					if (!firstParam) {
+						url += "&";
+					} else {
+						firstParam = false;
+					}
+
+					url += URLEncoder.encode("count=1", "UTF-8");
+				}
 
 				if (hasSkipConstraints()) {
 					if (!firstParam) {
@@ -369,7 +429,7 @@ public class ParseQuery {
 
 					url += URLEncoder.encode("keys=" + mSelect, "UTF-8");
 				}
-				
+
 			}
 		} catch (UnsupportedEncodingException e) {
 			url = "";
@@ -482,6 +542,15 @@ public class ParseQuery {
 	}
 
 	/**
+	 * Either to only count or not
+	 * 
+	 * @param newSkip
+	 */
+	public void setCount(boolean count) {
+		mCount = count;
+	}
+
+	/**
 	 * Controls the number of results to skip before returning any results. This
 	 * is useful for pagination. Default is to skip zero results.
 	 * 
@@ -507,7 +576,7 @@ public class ParseQuery {
 	public void select(String select) {
 		mSelect = select;
 	}
-	
+
 	private boolean hasSelectConstraints() {
 		return mSelect != null;
 	}

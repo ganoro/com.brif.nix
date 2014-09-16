@@ -109,7 +109,7 @@ public class DataAccess {
 		}
 		final ParseObject parseObject = profiles.get(0);
 
-		final Long next_uid = findLatestMessageId(parseObject.getObjectId());
+		final Long next_uid = findBoundryMessageId(parseObject.getObjectId(), true);
 
 		return new User(parseObject, next_uid);
 	}
@@ -135,9 +135,14 @@ public class DataAccess {
 		return emails;
 	}
 
-	private Long findLatestMessageId(String objectId) {
+	public Long findBoundryMessageId(String objectId, boolean isLast) {
 		ParseQuery query1 = new ParseQuery(getMsgTableByUser(objectId));
-		query1.orderByDescending("message_id").setLimit(1);
+		if (isLast) {
+			query1.orderByDescending("message_id").setLimit(1);	
+		} else {
+			query1.orderByAscending("message_id").setLimit(1);
+		}
+		
 		List<ParseObject> messages;
 		try {
 			messages = query1.find();
@@ -154,6 +159,11 @@ public class DataAccess {
 		final long message_id = parseObject.getLong("message_id", 1);
 		System.out.println("latest message_id is " + message_id);
 		return message_id;
+	}
+	
+	public int countMessages(String objectId) throws ParseException {
+		ParseQuery query = new ParseQuery(getMsgTableByUser(objectId));
+		return query.count();
 	}
 
 	private void createMessageDocument(String userObjectId,

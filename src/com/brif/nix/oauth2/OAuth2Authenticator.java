@@ -127,7 +127,7 @@ public class OAuth2Authenticator {
 			final long uidNext = allFolder.getUIDNext();
 			long min = Math.max(currentUser.next_uid + 1, uidNext - 4000);
 
-			final Message[] messages = allFolder.getMessagesByUID(min, uidNext);
+			Message[] messages = allFolder.getMessagesByUID(min, uidNext);
 
 			for (int i = messages.length - 1; i >= 0; i--) {
 				Message message = messages[i];
@@ -150,6 +150,23 @@ public class OAuth2Authenticator {
 
 			// if it is the user's setup process - quit here...
 			if (isSetupProcess) {
+				final int count = dataAccess.countMessages(currentUser.objectId);
+				if (count < 200) {
+					long to = dataAccess.findBoundryMessageId(currentUser.objectId, false);
+					long from = Math.max(0, to - 2000);
+
+					messages = allFolder.getMessagesByUID(from, to);
+					for (int i = messages.length - 1; i >= 0; i--) {
+						Message message = messages[i];
+						MessageParser mp = new MessageParser(message, currentUser);
+						if (mp.shouldBeProcessed()) {
+							System.out.println("Adding message: " + mp.getMessageId());
+							dataAccess.addMessage(currentUser, mp);
+							labelMessage(mp, currentUser);
+						}
+					}
+					
+				}
 				return;
 			}
 
