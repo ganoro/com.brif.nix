@@ -153,9 +153,9 @@ public class OAuth2Authenticator {
 				final int count = dataAccess.countMessages(currentUser.objectId);
 				if (count < 200) {
 					long to = dataAccess.findBoundryMessageId(currentUser.objectId, false);
-					long from = Math.max(0, to - 2000);
+					long from = Math.max(1, to - 2000);
 
-					messages = allFolder.getMessagesByUID(from, to);
+					messages = allFolder.getMessagesByUID(from, to - 1);
 					for (int i = messages.length - 1; i >= 0; i--) {
 						Message message = messages[i];
 						MessageParser mp = new MessageParser(message, currentUser);
