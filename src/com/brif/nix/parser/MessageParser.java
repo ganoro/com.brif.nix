@@ -329,7 +329,8 @@ public class MessageParser {
 		}
 		String result = parser.getContent();
 		if (result.length() == 0) {
-			return getSubject() == null ? "" : getSubject();
+			this.content = result;
+			return result;
 		}
 		result = result.substring(0, Math.min(result.length(), 70000));
 		this.content = convertToUTF(result, null);
