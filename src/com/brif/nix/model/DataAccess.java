@@ -208,14 +208,13 @@ public class DataAccess {
 			throws IOException, MessagingException {
 		// build the message data map
 		Map<String, Object> data = getMessageData(currentUser, mp);
-
+		
 		// store in table
 		createMessageDocument(currentUser.objectId, data);
 
 		// add the seen tag to the notification (not to table) and post
 		// notification
 		data.put("unseen", !mp.isSeen());
-		data.put("unique_id", mp.getBrifUniqueId());
 		notifyMessageAdded(currentUser, data);
 	}
 
@@ -244,6 +243,8 @@ public class DataAccess {
 		m.put("sent_date", getISO(sentDate));
 		final String subject = mp.getSubject();
 		m.put("subject", subject);
+		
+		m.put("unique_id", mp.getBrifUniqueId());	
 
 		// cleanup variables in case of equality of original recipients and
 		// recipients
